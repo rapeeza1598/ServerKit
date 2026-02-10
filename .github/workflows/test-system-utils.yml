@@ -84,33 +84,6 @@ jobs:
           EXPECTED_MANAGER: ${{ matrix.expected_manager }}
         run: python3 -m pytest tests/test_utils_system_integration.py -v
 
-      - name: Verify expected package manager
-        working-directory: backend
-        env:
-          EXPECTED_MANAGER: ${{ matrix.expected_manager }}
-        run: |
-          python3 -c "
-          import importlib, os, sys, types
-
-          # Direct import to avoid Flask deps
-          mod_path = os.path.join('app', 'utils', 'system.py')
-          spec = importlib.util.spec_from_file_location('app.utils.system', mod_path)
-          mod = importlib.util.module_from_spec(spec)
-          sys.modules['app'] = types.ModuleType('app')
-          utils = types.ModuleType('app.utils')
-          sys.modules['app.utils'] = utils
-          sys.modules['app'].utils = utils
-          sys.modules['app.utils.system'] = mod
-          sys.modules['app.utils'].system = mod
-          spec.loader.exec_module(mod)
-
-          expected = os.environ['EXPECTED_MANAGER']
-          detected = mod.PackageManager.detect()
-          print(f'Distro detected: {detected} (expected: {expected})')
-          assert detected == expected, f'FAIL: expected {expected}, got {detected}'
-          print('PASS')
-          "
-
   # ──────────────────────────────────────────────────────────────────
   # Job 3: Audit — grep for raw subprocess patterns in services
   # ──────────────────────────────────────────────────────────────────

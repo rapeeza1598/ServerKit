@@ -90,6 +90,16 @@ class TestPackageManagerDetection:
         """On any CI Linux container, a package manager should be available."""
         assert PackageManager.is_available() is True
 
+    def test_matches_expected_manager_from_ci(self):
+        """When CI sets EXPECTED_MANAGER, verify detect() agrees."""
+        expected = os.environ.get('EXPECTED_MANAGER')
+        if expected is None:
+            pytest.skip('EXPECTED_MANAGER not set (not running in CI matrix)')
+        detected = PackageManager.detect()
+        assert detected == expected, (
+            f'CI matrix expects {expected!r} but detect() returned {detected!r}'
+        )
+
 
 class TestIsCommandAvailable:
     """Verify is_command_available() finds real binaries."""
