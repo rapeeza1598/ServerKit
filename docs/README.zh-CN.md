@@ -1,16 +1,16 @@
 <div align="center">
 
-English | [Español](docs/README.es.md) | [中文版](docs/README.zh-CN.md) | [Português](docs/README.pt.md)
+[English](../README.md) | [Español](README.es.md) | 中文版 | [Português](README.pt.md)
 
 # ServerKit
 
 <img width="700" alt="server-kit" src="https://github.com/user-attachments/assets/bfc59e75-8f90-4674-a222-e18213b628b7" />
 
-**Self-hosted infrastructure, made simple.**
+**自托管基础设施，化繁为简。**
 
-A lightweight, modern server control panel for managing web apps, databases,
-Docker containers, and security — without the complexity of Kubernetes
-or the cost of managed platforms.
+一款轻量、现代的服务器控制面板，用于管理 Web 应用、数据库、
+Docker 容器和安全策略——无需 Kubernetes 的复杂性，
+也没有托管平台的高昂成本。
 
 <br>
 
@@ -18,7 +18,7 @@ or the cost of managed platforms.
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 [![Discord](https://img.shields.io/discord/1470639209059455008?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/pe4E5zmj)
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](../LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/react-18-61DAFB.svg?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
 [![Flask](https://img.shields.io/badge/flask-3.0-000000.svg?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
@@ -27,7 +27,7 @@ or the cost of managed platforms.
 
 <br>
 
-[Features](#-features) · [Quick Start](#-quick-start) · [Screenshots](#-screenshots) · [Architecture](#-architecture) · [Roadmap](#-roadmap) · [Docs](#-documentation) · [Contributing](#-contributing) · [Discord](#-community)
+[功能特性](#-功能特性) · [快速开始](#-快速开始) · [截图预览](#-截图预览) · [系统架构](#-系统架构) · [路线图](#-路线图) · [文档](#-文档) · [参与贡献](#-参与贡献) · [社区](#-社区)
 
 </div>
 
@@ -39,98 +39,98 @@ or the cost of managed platforms.
 
 ---
 
-## 🎯 Features
+## 🎯 功能特性
 
-### Apps & Containers
+### 应用与容器
 
-🐘 **PHP / WordPress** — PHP-FPM 8.x with one-click WordPress installation
+🐘 **PHP / WordPress** — PHP-FPM 8.x，支持一键安装 WordPress
 
-🐍 **Python Apps** — Deploy Flask and Django with Gunicorn
+🐍 **Python 应用** — 使用 Gunicorn 部署 Flask 和 Django
 
-🟢 **Node.js** — PM2-managed applications with log streaming
+🟢 **Node.js** — PM2 进程管理，支持日志实时推送
 
-🐳 **Docker** — Full container and Docker Compose management
+🐳 **Docker** — 全面的容器和 Docker Compose 管理
 
-🔑 **Environment Variables** — Secure, encrypted per-app variable management
+🔑 **环境变量** — 安全加密的应用级变量管理
 
-### Infrastructure
+### 基础设施
 
-🌐 **Domain Management** — Nginx virtual hosts with easy configuration
+🌐 **域名管理** — Nginx 虚拟主机，配置简便
 
-🔒 **SSL Certificates** — Automatic Let's Encrypt with auto-renewal
+🔒 **SSL 证书** — Let's Encrypt 自动签发与自动续期
 
-🗄️ **Databases** — MySQL/MariaDB and PostgreSQL support
+🗄️ **数据库** — 支持 MySQL/MariaDB 和 PostgreSQL
 
-🛡️ **Firewall (UFW)** — Visual firewall rule management
+🛡️ **防火墙 (UFW)** — 可视化防火墙规则管理
 
-⏰ **Cron Jobs** — Schedule tasks with a visual editor
+⏰ **定时任务** — 可视化编辑器调度 Cron 任务
 
-📁 **File Manager** — Browse and edit files via web interface
+📁 **文件管理器** — 通过 Web 界面浏览和编辑文件
 
-📡 **FTP Server** — Manage vsftpd users and access
+📡 **FTP 服务器** — 管理 vsftpd 用户和访问权限
 
-### Security
+### 安全
 
-🔐 **Two-Factor Auth** — TOTP-based with backup codes
+🔐 **双因素认证** — 基于 TOTP 的验证，支持备用恢复码
 
-🦠 **Malware Scanning** — ClamAV integration with quarantine
+🦠 **恶意软件扫描** — 集成 ClamAV，支持隔离处理
 
-📋 **File Integrity Monitoring** — Detect unauthorized file changes
+📋 **文件完整性监控** — 检测未授权的文件变更
 
-🚨 **Security Alerts** — Real-time threat notifications
+🚨 **安全告警** — 实时威胁通知
 
-🧱 **Fail2ban & SSH** — Brute force protection and SSH key management
+🧱 **Fail2ban 和 SSH** — 暴力破解防护与 SSH 密钥管理
 
-### Monitoring & Alerts
+### 监控与告警
 
-📊 **Real-time Metrics** — CPU, RAM, disk, network monitoring via WebSocket
+📊 **实时指标** — 通过 WebSocket 监控 CPU、内存、磁盘、网络
 
-📈 **Uptime Tracking** — Historical server uptime data
+📈 **运行时间追踪** — 服务器历史在线率数据
 
-🔔 **Notifications** — Discord, Slack, Telegram, and generic webhooks
+🔔 **通知推送** — 支持 Discord、Slack、Telegram 及通用 Webhook
 
-🖥️ **Multi-Server** — Agent-based remote server monitoring and management
+🖥️ **多服务器管理** — 基于 Agent 的远程服务器监控与管理
 
 ---
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-> ⏱️ Up and running in under 2 minutes
+> ⏱️ 不到 2 分钟即可启动运行
 
-### Option 1: One-Line Install (Recommended)
+### 方式一：一键安装（推荐）
 
 ```bash
 curl -fsSL https://serverkit.ai/install.sh | bash
 ```
 
-> Works on Ubuntu 22.04+ and Debian 12+. Sets up everything automatically.
+> 支持 Ubuntu 22.04+ 和 Debian 12+，自动完成所有配置。
 
-### Option 2: Docker
+### 方式二：Docker
 
 ```bash
 git clone https://github.com/jhd3197/ServerKit.git
 cd ServerKit
-cp .env.example .env       # then edit .env with your secrets
-docker compose up -d       # access at http://localhost
+cp .env.example .env       # 编辑 .env 文件，填入你的密钥
+docker compose up -d       # 访问 http://localhost
 ```
 
-### Option 3: Manual Installation
+### 方式三：手动安装
 
-See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions.
+参阅 [安装指南](INSTALLATION.md) 获取详细的分步说明。
 
-### Requirements
+### 系统要求
 
-| | Minimum | Recommended |
+| | 最低配置 | 推荐配置 |
 |---|---------|-------------|
-| **OS** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
+| **操作系统** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
 | **CPU** | 1 vCPU | 2+ vCPU |
-| **RAM** | 1 GB | 2+ GB |
-| **Disk** | 10 GB | 20+ GB |
-| **Docker** | 24.0+ | Latest |
+| **内存** | 1 GB | 2+ GB |
+| **磁盘** | 10 GB | 20+ GB |
+| **Docker** | 24.0+ | 最新版 |
 
 ---
 
-## 📸 Screenshots
+## 📸 截图预览
 
 <p align="center">
 
@@ -139,7 +139,7 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 </p>
 
 <details>
-<summary><strong>View More Screenshots</strong></summary>
+<summary><strong>查看更多截图</strong></summary>
 
 <br>
 
@@ -167,7 +167,7 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ 系统架构
 
 ```
                           ┌──────────────────┐
@@ -203,84 +203,84 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**[View Full Architecture Documentation →](docs/ARCHITECTURE.md)** — Request flow, template system, port allocation, database linking, and troubleshooting.
+**[查看完整架构文档 →](ARCHITECTURE.md)** — 请求流程、模板系统、端口分配、数据库关联及故障排查。
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ 路线图
 
-- [x] Core infrastructure — Flask + React + JWT + WebSocket
-- [x] Application management — PHP, Python, Node.js, Docker
-- [x] Domain & SSL — Nginx virtual hosts, Let's Encrypt
-- [x] Databases — MySQL, PostgreSQL
-- [x] File & FTP management
-- [x] Monitoring & alerts — Metrics, webhooks, uptime tracking
-- [x] Security — 2FA, ClamAV, file integrity, Fail2ban
-- [x] Firewall — UFW integration
-- [x] Multi-server management — Go agent, centralized dashboard
-- [x] Git deployment — Webhooks, auto-deploy, rollback, zero-downtime
-- [ ] Backup & restore — S3, Backblaze B2, scheduled backups
-- [ ] Email server — Postfix, Dovecot, DKIM/SPF/DMARC
-- [ ] Team & permissions — RBAC, audit logging
-- [ ] Mobile app — React Native with push notifications
-- [ ] Plugin marketplace — Extensions, custom widgets, themes
+- [x] 核心基础设施 — Flask + React + JWT + WebSocket
+- [x] 应用管理 — PHP、Python、Node.js、Docker
+- [x] 域名与 SSL — Nginx 虚拟主机、Let's Encrypt
+- [x] 数据库 — MySQL、PostgreSQL
+- [x] 文件与 FTP 管理
+- [x] 监控与告警 — 指标、Webhook、运行时间追踪
+- [x] 安全 — 双因素认证、ClamAV、文件完整性、Fail2ban
+- [x] 防火墙 — UFW 集成
+- [x] 多服务器管理 — Go Agent、集中式仪表盘
+- [x] Git 部署 — Webhook、自动部署、回滚、零停机
+- [ ] 备份与恢复 — S3、Backblaze B2、定时备份
+- [ ] 邮件服务器 — Postfix、Dovecot、DKIM/SPF/DMARC
+- [ ] 团队与权限 — RBAC、审计日志
+- [ ] 移动应用 — React Native，支持推送通知
+- [ ] 插件市场 — 扩展、自定义组件、主题
 
-Full details: [ROADMAP.md](ROADMAP.md)
+完整详情：[ROADMAP.md](../ROADMAP.md)
 
 ---
 
-## 📖 Documentation
+## 📖 文档
 
-| Document | Description |
+| 文档 | 说明 |
 |----------|-------------|
-| [Architecture](docs/ARCHITECTURE.md) | System design, request flow, diagrams |
-| [Installation Guide](docs/INSTALLATION.md) | Complete setup instructions |
-| [Deployment Guide](docs/DEPLOYMENT.md) | CLI commands and production deployment |
-| [API Reference](docs/API.md) | REST API endpoints |
-| [Roadmap](ROADMAP.md) | Development roadmap and planned features |
-| [Contributing](CONTRIBUTING.md) | How to contribute |
+| [系统架构](ARCHITECTURE.md) | 系统设计、请求流程、架构图 |
+| [安装指南](INSTALLATION.md) | 完整的安装配置说明 |
+| [部署指南](DEPLOYMENT.md) | CLI 命令与生产环境部署 |
+| [API 参考](API.md) | REST API 接口文档 |
+| [路线图](../ROADMAP.md) | 开发路线图与规划功能 |
+| [参与贡献](../CONTRIBUTING.md) | 如何参与贡献 |
 
 ---
 
-## 🧱 Tech Stack
+## 🧱 技术栈
 
-| Layer | Technology |
+| 层级 | 技术 |
 |-------|------------|
-| Backend | Python 3.11, Flask, SQLAlchemy, Flask-SocketIO |
-| Frontend | React 18, Vite, LESS |
-| Database | SQLite / PostgreSQL |
-| Web Server | Nginx, Gunicorn |
-| Containers | Docker, Docker Compose |
-| Security | ClamAV, TOTP (pyotp), Cryptography |
+| 后端 | Python 3.11, Flask, SQLAlchemy, Flask-SocketIO |
+| 前端 | React 18, Vite, LESS |
+| 数据库 | SQLite / PostgreSQL |
+| Web 服务器 | Nginx, Gunicorn |
+| 容器 | Docker, Docker Compose |
+| 安全 | ClamAV, TOTP (pyotp), Cryptography |
 
 ---
 
-## 🤝 Contributing
+## 🤝 参与贡献
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+欢迎贡献代码！请先阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 
 ```
-fork → feature branch → commit → push → pull request
+Fork → 创建功能分支 → 提交代码 → 推送 → 发起 Pull Request
 ```
 
-**Priority areas:** Backup implementations, additional notification channels, UI/UX improvements, documentation.
+**优先领域：** 备份功能实现、更多通知渠道、UI/UX 改进、文档完善。
 
 ---
 
-## 💬 Community
+## 💬 社区
 
-[![Discord](https://img.shields.io/badge/Discord-Join_Us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/pe4E5zmj)
+[![Discord](https://img.shields.io/badge/Discord-加入我们-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/pe4E5zmj)
 
-Join the Discord to ask questions, share feedback, or get help with your setup.
+加入 Discord 社区，提出问题、分享反馈，或获取安装部署方面的帮助。
 
 ---
 
 <div align="center">
 
-**ServerKit** — Simple. Modern. Self-hosted.
+**ServerKit** — 简洁。现代。自托管。
 
-[Report Bug](https://github.com/jhd3197/ServerKit/issues) · [Request Feature](https://github.com/jhd3197/ServerKit/issues)
+[报告 Bug](https://github.com/jhd3197/ServerKit/issues) · [功能建议](https://github.com/jhd3197/ServerKit/issues)
 
-Made with ❤️ by [Juan Denis](https://juandenis.com)
+由 [Juan Denis](https://juandenis.com) 用 ❤️ 打造
 
 </div>

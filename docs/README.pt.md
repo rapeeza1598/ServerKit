@@ -1,16 +1,16 @@
 <div align="center">
 
-English | [Español](docs/README.es.md) | [中文版](docs/README.zh-CN.md) | [Português](docs/README.pt.md)
+[English](../README.md) | [Español](README.es.md) | [中文版](README.zh-CN.md) | Português
 
 # ServerKit
 
 <img width="700" alt="server-kit" src="https://github.com/user-attachments/assets/bfc59e75-8f90-4674-a222-e18213b628b7" />
 
-**Self-hosted infrastructure, made simple.**
+**Infraestrutura auto-hospedada, de forma simples.**
 
-A lightweight, modern server control panel for managing web apps, databases,
-Docker containers, and security — without the complexity of Kubernetes
-or the cost of managed platforms.
+Um painel de controle de servidores leve e moderno para gerenciar aplicações web, bancos de dados,
+containers Docker e segurança — sem a complexidade do Kubernetes
+ou o custo de plataformas gerenciadas.
 
 <br>
 
@@ -18,7 +18,7 @@ or the cost of managed platforms.
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 [![Discord](https://img.shields.io/discord/1470639209059455008?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/pe4E5zmj)
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](../LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/react-18-61DAFB.svg?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
 [![Flask](https://img.shields.io/badge/flask-3.0-000000.svg?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
@@ -27,7 +27,7 @@ or the cost of managed platforms.
 
 <br>
 
-[Features](#-features) · [Quick Start](#-quick-start) · [Screenshots](#-screenshots) · [Architecture](#-architecture) · [Roadmap](#-roadmap) · [Docs](#-documentation) · [Contributing](#-contributing) · [Discord](#-community)
+[Funcionalidades](#-funcionalidades) · [Início Rápido](#-início-rápido) · [Capturas de Tela](#-capturas-de-tela) · [Arquitetura](#-arquitetura) · [Roadmap](#-roadmap) · [Documentação](#-documentação) · [Contribuindo](#-contribuindo) · [Discord](#-comunidade)
 
 </div>
 
@@ -39,98 +39,98 @@ or the cost of managed platforms.
 
 ---
 
-## 🎯 Features
+## 🎯 Funcionalidades
 
-### Apps & Containers
+### Aplicações & Containers
 
-🐘 **PHP / WordPress** — PHP-FPM 8.x with one-click WordPress installation
+🐘 **PHP / WordPress** — PHP-FPM 8.x com instalação do WordPress em um clique
 
-🐍 **Python Apps** — Deploy Flask and Django with Gunicorn
+🐍 **Aplicações Python** — Deploy de Flask e Django com Gunicorn
 
-🟢 **Node.js** — PM2-managed applications with log streaming
+🟢 **Node.js** — Aplicações gerenciadas pelo PM2 com streaming de logs
 
-🐳 **Docker** — Full container and Docker Compose management
+🐳 **Docker** — Gerenciamento completo de containers e Docker Compose
 
-🔑 **Environment Variables** — Secure, encrypted per-app variable management
+🔑 **Variáveis de Ambiente** — Gerenciamento seguro e criptografado por aplicação
 
-### Infrastructure
+### Infraestrutura
 
-🌐 **Domain Management** — Nginx virtual hosts with easy configuration
+🌐 **Gerenciamento de Domínios** — Virtual hosts Nginx com configuração simplificada
 
-🔒 **SSL Certificates** — Automatic Let's Encrypt with auto-renewal
+🔒 **Certificados SSL** — Let's Encrypt automático com renovação automática
 
-🗄️ **Databases** — MySQL/MariaDB and PostgreSQL support
+🗄️ **Bancos de Dados** — Suporte a MySQL/MariaDB e PostgreSQL
 
-🛡️ **Firewall (UFW)** — Visual firewall rule management
+🛡️ **Firewall (UFW)** — Gerenciamento visual de regras de firewall
 
-⏰ **Cron Jobs** — Schedule tasks with a visual editor
+⏰ **Cron Jobs** — Agendamento de tarefas com editor visual
 
-📁 **File Manager** — Browse and edit files via web interface
+📁 **Gerenciador de Arquivos** — Navegue e edite arquivos pela interface web
 
-📡 **FTP Server** — Manage vsftpd users and access
+📡 **Servidor FTP** — Gerencie usuários e acessos do vsftpd
 
-### Security
+### Segurança
 
-🔐 **Two-Factor Auth** — TOTP-based with backup codes
+🔐 **Autenticação de Dois Fatores** — Baseada em TOTP com códigos de recuperação
 
-🦠 **Malware Scanning** — ClamAV integration with quarantine
+🦠 **Varredura de Malware** — Integração com ClamAV e quarentena
 
-📋 **File Integrity Monitoring** — Detect unauthorized file changes
+📋 **Monitoramento de Integridade de Arquivos** — Detecção de alterações não autorizadas
 
-🚨 **Security Alerts** — Real-time threat notifications
+🚨 **Alertas de Segurança** — Notificações de ameaças em tempo real
 
-🧱 **Fail2ban & SSH** — Brute force protection and SSH key management
+🧱 **Fail2ban & SSH** — Proteção contra força bruta e gerenciamento de chaves SSH
 
-### Monitoring & Alerts
+### Monitoramento & Alertas
 
-📊 **Real-time Metrics** — CPU, RAM, disk, network monitoring via WebSocket
+📊 **Métricas em Tempo Real** — Monitoramento de CPU, RAM, disco e rede via WebSocket
 
-📈 **Uptime Tracking** — Historical server uptime data
+📈 **Rastreamento de Uptime** — Histórico de disponibilidade do servidor
 
-🔔 **Notifications** — Discord, Slack, Telegram, and generic webhooks
+🔔 **Notificações** — Discord, Slack, Telegram e webhooks genéricos
 
-🖥️ **Multi-Server** — Agent-based remote server monitoring and management
+🖥️ **Multi-Servidor** — Monitoramento e gerenciamento remoto de servidores baseado em agentes
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Início Rápido
 
-> ⏱️ Up and running in under 2 minutes
+> ⏱️ Pronto para usar em menos de 2 minutos
 
-### Option 1: One-Line Install (Recommended)
+### Opção 1: Instalação em Uma Linha (Recomendado)
 
 ```bash
 curl -fsSL https://serverkit.ai/install.sh | bash
 ```
 
-> Works on Ubuntu 22.04+ and Debian 12+. Sets up everything automatically.
+> Funciona no Ubuntu 22.04+ e Debian 12+. Configura tudo automaticamente.
 
-### Option 2: Docker
+### Opção 2: Docker
 
 ```bash
 git clone https://github.com/jhd3197/ServerKit.git
 cd ServerKit
-cp .env.example .env       # then edit .env with your secrets
-docker compose up -d       # access at http://localhost
+cp .env.example .env       # depois edite o .env com suas chaves secretas
+docker compose up -d       # acesse em http://localhost
 ```
 
-### Option 3: Manual Installation
+### Opção 3: Instalação Manual
 
-See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions.
+Consulte o [Guia de Instalação](INSTALLATION.md) para instruções passo a passo.
 
-### Requirements
+### Requisitos
 
-| | Minimum | Recommended |
+| | Mínimo | Recomendado |
 |---|---------|-------------|
-| **OS** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
+| **SO** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
 | **CPU** | 1 vCPU | 2+ vCPU |
 | **RAM** | 1 GB | 2+ GB |
-| **Disk** | 10 GB | 20+ GB |
-| **Docker** | 24.0+ | Latest |
+| **Disco** | 10 GB | 20+ GB |
+| **Docker** | 24.0+ | Mais recente |
 
 ---
 
-## 📸 Screenshots
+## 📸 Capturas de Tela
 
 <p align="center">
 
@@ -139,7 +139,7 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 </p>
 
 <details>
-<summary><strong>View More Screenshots</strong></summary>
+<summary><strong>Ver Mais Capturas de Tela</strong></summary>
 
 <br>
 
@@ -167,7 +167,7 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
 ```
                           ┌──────────────────┐
@@ -203,84 +203,84 @@ See the [Installation Guide](docs/INSTALLATION.md) for step-by-step instructions
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**[View Full Architecture Documentation →](docs/ARCHITECTURE.md)** — Request flow, template system, port allocation, database linking, and troubleshooting.
+**[Ver Documentação Completa da Arquitetura →](ARCHITECTURE.md)** — Fluxo de requisições, sistema de templates, alocação de portas, vinculação de bancos de dados e solução de problemas.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] Core infrastructure — Flask + React + JWT + WebSocket
-- [x] Application management — PHP, Python, Node.js, Docker
-- [x] Domain & SSL — Nginx virtual hosts, Let's Encrypt
-- [x] Databases — MySQL, PostgreSQL
-- [x] File & FTP management
-- [x] Monitoring & alerts — Metrics, webhooks, uptime tracking
-- [x] Security — 2FA, ClamAV, file integrity, Fail2ban
-- [x] Firewall — UFW integration
-- [x] Multi-server management — Go agent, centralized dashboard
-- [x] Git deployment — Webhooks, auto-deploy, rollback, zero-downtime
-- [ ] Backup & restore — S3, Backblaze B2, scheduled backups
-- [ ] Email server — Postfix, Dovecot, DKIM/SPF/DMARC
-- [ ] Team & permissions — RBAC, audit logging
-- [ ] Mobile app — React Native with push notifications
-- [ ] Plugin marketplace — Extensions, custom widgets, themes
+- [x] Infraestrutura base — Flask + React + JWT + WebSocket
+- [x] Gerenciamento de aplicações — PHP, Python, Node.js, Docker
+- [x] Domínio & SSL — Virtual hosts Nginx, Let's Encrypt
+- [x] Bancos de dados — MySQL, PostgreSQL
+- [x] Gerenciamento de arquivos & FTP
+- [x] Monitoramento & alertas — Métricas, webhooks, rastreamento de uptime
+- [x] Segurança — 2FA, ClamAV, integridade de arquivos, Fail2ban
+- [x] Firewall — Integração com UFW
+- [x] Gerenciamento multi-servidor — Agente em Go, painel centralizado
+- [x] Deploy via Git — Webhooks, deploy automático, rollback, zero-downtime
+- [ ] Backup & restauração — S3, Backblaze B2, backups agendados
+- [ ] Servidor de e-mail — Postfix, Dovecot, DKIM/SPF/DMARC
+- [ ] Equipes & permissões — RBAC, log de auditoria
+- [ ] Aplicativo mobile — React Native com notificações push
+- [ ] Marketplace de plugins — Extensões, widgets personalizados, temas
 
-Full details: [ROADMAP.md](ROADMAP.md)
+Detalhes completos: [ROADMAP.md](../ROADMAP.md)
 
 ---
 
-## 📖 Documentation
+## 📖 Documentação
 
-| Document | Description |
+| Documento | Descrição |
 |----------|-------------|
-| [Architecture](docs/ARCHITECTURE.md) | System design, request flow, diagrams |
-| [Installation Guide](docs/INSTALLATION.md) | Complete setup instructions |
-| [Deployment Guide](docs/DEPLOYMENT.md) | CLI commands and production deployment |
-| [API Reference](docs/API.md) | REST API endpoints |
-| [Roadmap](ROADMAP.md) | Development roadmap and planned features |
-| [Contributing](CONTRIBUTING.md) | How to contribute |
+| [Arquitetura](ARCHITECTURE.md) | Design do sistema, fluxo de requisições, diagramas |
+| [Guia de Instalação](INSTALLATION.md) | Instruções completas de configuração |
+| [Guia de Deploy](DEPLOYMENT.md) | Comandos CLI e deploy em produção |
+| [Referência da API](API.md) | Endpoints da API REST |
+| [Roadmap](../ROADMAP.md) | Roadmap de desenvolvimento e funcionalidades planejadas |
+| [Contribuindo](../CONTRIBUTING.md) | Como contribuir |
 
 ---
 
-## 🧱 Tech Stack
+## 🧱 Stack Tecnológica
 
-| Layer | Technology |
+| Camada | Tecnologia |
 |-------|------------|
 | Backend | Python 3.11, Flask, SQLAlchemy, Flask-SocketIO |
 | Frontend | React 18, Vite, LESS |
-| Database | SQLite / PostgreSQL |
-| Web Server | Nginx, Gunicorn |
+| Banco de Dados | SQLite / PostgreSQL |
+| Servidor Web | Nginx, Gunicorn |
 | Containers | Docker, Docker Compose |
-| Security | ClamAV, TOTP (pyotp), Cryptography |
+| Segurança | ClamAV, TOTP (pyotp), Cryptography |
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contribuindo
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+Contribuições são bem-vindas! Por favor, leia o [CONTRIBUTING.md](../CONTRIBUTING.md) primeiro.
 
 ```
-fork → feature branch → commit → push → pull request
+fork → branch de feature → commit → push → pull request
 ```
 
-**Priority areas:** Backup implementations, additional notification channels, UI/UX improvements, documentation.
+**Áreas prioritárias:** Implementações de backup, canais de notificação adicionais, melhorias de UI/UX, documentação.
 
 ---
 
-## 💬 Community
+## 💬 Comunidade
 
-[![Discord](https://img.shields.io/badge/Discord-Join_Us-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/pe4E5zmj)
+[![Discord](https://img.shields.io/badge/Discord-Junte--se_a_Nós-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/pe4E5zmj)
 
-Join the Discord to ask questions, share feedback, or get help with your setup.
+Entre no Discord para tirar dúvidas, compartilhar feedback ou obter ajuda com sua configuração.
 
 ---
 
 <div align="center">
 
-**ServerKit** — Simple. Modern. Self-hosted.
+**ServerKit** — Simples. Moderno. Auto-hospedado.
 
-[Report Bug](https://github.com/jhd3197/ServerKit/issues) · [Request Feature](https://github.com/jhd3197/ServerKit/issues)
+[Reportar Bug](https://github.com/jhd3197/ServerKit/issues) · [Solicitar Funcionalidade](https://github.com/jhd3197/ServerKit/issues)
 
-Made with ❤️ by [Juan Denis](https://juandenis.com)
+Feito com ❤️ por [Juan Denis](https://juandenis.com)
 
 </div>
