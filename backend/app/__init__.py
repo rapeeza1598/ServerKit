@@ -202,17 +202,22 @@ def create_app(config_name=None):
     # Serve frontend for root path
     @app.route('/')
     def serve_index():
-        return send_from_directory(app.static_folder, 'index.html')
+        index = os.path.join(app.static_folder, 'index.html') if app.static_folder else None
+        if index and os.path.isfile(index):
+            return send_from_directory(app.static_folder, 'index.html')
+        return {'message': 'ServerKit API is running', 'docs': '/api/v1/'}, 200
 
     # Catch-all route for SPA - must be after all other routes
     @app.errorhandler(404)
     def not_found(e):
-        # If it's an API request, return JSON 404
         from flask import request
         if request.path.startswith('/api/'):
             return {'error': 'Not found'}, 404
-        # Otherwise serve the SPA index.html for client-side routing
-        return send_from_directory(app.static_folder, 'index.html')
+        # Serve SPA index.html if it exists, otherwise JSON 404
+        index = os.path.join(app.static_folder, 'index.html') if app.static_folder else None
+        if index and os.path.isfile(index):
+            return send_from_directory(app.static_folder, 'index.html')
+        return {'error': 'Not found'}, 404
 
     return app
 

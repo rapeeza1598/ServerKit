@@ -363,12 +363,12 @@ const AddServerModal = ({ groups, onClose, onCreated }) => {
         toast.success('Copied to clipboard');
     }
 
-    const linuxInstallScript = registrationData ? `curl -fsSL https://your-server/api/v1/servers/install.sh | sudo bash -s -- \\
-  --server-url "${window.location.origin}" \\
+    const linuxInstallScript = registrationData ? `curl -fsSL ${window.location.origin}/api/v1/servers/install.sh | sudo bash -s -- \\
+  --server "${window.location.origin}" \\
   --token "${registrationData.registration_token}"` : '';
 
-    const windowsInstallScript = registrationData ? `irm https://your-server/api/v1/servers/install.ps1 | iex
-Install-ServerKitAgent -ServerUrl "${window.location.origin}" -Token "${registrationData.registration_token}"` : '';
+    const windowsInstallScript = registrationData ? `irm ${window.location.origin}/api/v1/servers/install.ps1 | iex
+Install-ServerKitAgent -Server "${window.location.origin}" -Token "${registrationData.registration_token}"` : '';
 
     return (
         <div className="modal-overlay" onClick={onClose}>
