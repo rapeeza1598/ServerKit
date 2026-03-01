@@ -1,13 +1,25 @@
 # Frontend Dockerfile for ServerKit
-# Pre-built assets are copied in — the Vite build runs on the host
-# to avoid memory issues on low-RAM VPS servers.
+# Multi-stage build: Node builds the assets, nginx serves them.
+
+# Stage 1: Build
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve
 FROM nginx:alpine
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy pre-built frontend assets
-COPY dist /usr/share/nginx/html
+# Copy built frontend assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Create non-root user for nginx
 RUN chown -R nginx:nginx /usr/share/nginx/html && \

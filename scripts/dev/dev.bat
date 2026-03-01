@@ -17,27 +17,27 @@ goto help
 
 :up
 echo Starting ServerKit (Docker)...
-docker compose -f docker-compose.dev.yml up --build -d
+docker compose up --build -d
 echo.
-echo   Frontend: http://localhost:3000
-echo   Backend:  http://localhost:5000
+echo   Frontend: http://localhost:3847
+echo   Backend:  http://localhost:5849
 echo.
 goto end
 
 :down
-docker compose -f docker-compose.dev.yml down
+docker compose down
 goto end
 
 :logs
-docker compose -f docker-compose.dev.yml logs -f
+docker compose logs -f
 goto end
 
 :shell
-docker exec -it serverkit-backend-dev /bin/bash
+docker exec -it serverkit-backend /bin/bash
 goto end
 
 :reset
-docker compose -f docker-compose.dev.yml down -v
+docker compose down -v
 echo Run 'dev.bat up' to start fresh.
 goto end
 
@@ -50,8 +50,6 @@ echo   down    Stop containers
 echo   logs    View logs
 echo   shell   Shell into backend
 echo   reset   Reset all data
-echo.
-echo Note: Use WSL for full system feature testing.
 echo.
 goto end
 
