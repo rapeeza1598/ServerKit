@@ -28,15 +28,13 @@
 .env.*.local
 *.key
 *.pem
+*.crt
+*.csr
 
 # OS files
 .DS_Store
 Thumbs.db
 nul
-
-# Claude Code
-/.claude/
-/.claude_/
 
 # Temporary files
 *.tmp
@@ -60,3 +58,6 @@ new_templates/
 backend/dev-data/
 /.vscode
 /.vscode1
+/.pr
+/.reviews
+/.claude/settings.local.json
