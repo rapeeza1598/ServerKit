@@ -1,6 +1,6 @@
 """API analytics endpoints."""
 from flask import Blueprint, jsonify, request
-from app.middleware.rbac import admin_required, get_current_user
+from app.middleware.rbac import admin_required, auth_required, get_current_user
 from app.services.api_analytics_service import ApiAnalyticsService
 from app.services.api_key_service import ApiKeyService
 
@@ -42,7 +42,7 @@ def timeseries():
 
 
 @api_analytics_bp.route('/keys/<int:key_id>/usage', methods=['GET'])
-@admin_required
+@auth_required
 def key_usage(key_id):
     """Get usage stats for a specific API key."""
     period = request.args.get('period', '24h')

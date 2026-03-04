@@ -27,33 +27,40 @@ def _needs_sudo() -> bool:
     return True
 
 
-def privileged_cmd(cmd: Union[List[str], str]) -> Union[List[str], str]:
+def privileged_cmd(cmd: Union[List[str], str], *, user: Optional[str] = None) -> Union[List[str], str]:
     """Return *cmd* with ``sudo`` prepended when necessary.
 
     Use this when you need the command list for ``Popen`` or other non-``run``
     callers.  For simple ``subprocess.run`` calls prefer :func:`run_privileged`.
+
+    Pass *user* to run the command as a specific user (``sudo -u <user>``).
     """
     if isinstance(cmd, str):
         if _needs_sudo() and not cmd.lstrip().startswith('sudo '):
+            if user:
+                return f'sudo -u {user} {cmd}'
             return f'sudo {cmd}'
         return cmd
 
     cmd = list(cmd)
     if _needs_sudo() and cmd[0] != 'sudo':
+        if user:
+            return ['sudo', '-u', user] + cmd
         return ['sudo'] + cmd
     return cmd
 
 
-def run_privileged(cmd: Union[List[str], str], **kwargs) -> subprocess.CompletedProcess:
+def run_privileged(cmd: Union[List[str], str], *, user: Optional[str] = None, **kwargs) -> subprocess.CompletedProcess:
     """Run a command with sudo if the current process is not root.
 
     Prepends ``sudo`` only when needed (not root, not Windows, sudo exists).
+    Pass *user* to run the command as a specific user (``sudo -u <user>``).
     Defaults to ``capture_output=True, text=True`` but callers can override.
 
     Returns the raw ``CompletedProcess`` so services keep their existing
     error-handling patterns.
     """
-    cmd = privileged_cmd(cmd)
+    cmd = privileged_cmd(cmd, user=user)
     kwargs.setdefault('capture_output', True)
     kwargs.setdefault('text', True)
     return subprocess.run(cmd, **kwargs)

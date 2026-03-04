@@ -5,7 +5,7 @@ import sys
 import pytest
 
 # Ensure backend root is on path
-_backend = os.path.dirname(os.path.abspath(__file__))
+_backend = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _backend not in sys.path:
     sys.path.insert(0, _backend)
 

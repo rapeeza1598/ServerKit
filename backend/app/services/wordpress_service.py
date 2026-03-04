@@ -71,7 +71,7 @@ define('WP_AUTO_UPDATE_CORE', 'minor');
                 return install_result
 
         try:
-            cmd = privileged_cmd(['sudo', '-u', user, cls.WP_CLI_PATH, '--path=' + path] + command)
+            cmd = privileged_cmd([cls.WP_CLI_PATH, '--path=' + path] + command, user=user)
             result = subprocess.run(
                 cmd,
                 capture_output=True,
