@@ -156,7 +156,7 @@ create_user() {
 download_agent() {
     if [ -z "$DOWNLOAD_URL" ]; then
         # Construct download URL from server
-        DOWNLOAD_URL="${SERVER_URL}/downloads/agent/serverkit-agent-${OS}-${ARCH}"
+        DOWNLOAD_URL="${SERVER_URL}/api/v1/servers/agent/download/${OS}/${ARCH}"
     fi
 
     log_info "Downloading agent from $DOWNLOAD_URL..."

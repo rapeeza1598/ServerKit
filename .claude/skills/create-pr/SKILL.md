@@ -103,6 +103,13 @@ Omit the Highlights section entirely for internal-only PRs — don't force it.
 - Bullets should describe the mechanism, not just the intent. "Race condition in `get_or_create_chat` fixed by moving creation inside the lookup session" is good. "Fix database issues" is not.
 - Group related changes together (all typing fixes, all security hardening, all API changes, etc.)
 
+#### Contributors
+- If the PR includes commits from multiple authors (not just the repo owner), add a **Contributors** section after the summary and before Highlights.
+- Use `git log main..HEAD --format='%aN <%aE>' | sort -u` to find unique commit authors.
+- Exclude bot accounts (e.g., `github-actions[bot]`).
+- Format: `@username` if their GitHub handle is available (check the ARGUMENTS or commit metadata), otherwise use their name. Add a brief note about what they contributed if it's clear from the commits.
+- Keep it short — one line per contributor, no need for a full changelog.
+
 #### General
 - **No test plan section.** Do not include "Test plan" or "Testing".
 - **No mention of tests.** Do not reference test files, test results, or testing.

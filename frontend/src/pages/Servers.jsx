@@ -503,7 +503,7 @@ Install-ServerKitAgent -Server "${window.location.origin}" -Token "${registratio
                                 <li>Once connected, the server will appear as "Online"</li>
                             </ol>
                             <p className="text-muted">
-                                The registration token expires in 1 hour. After that, you'll need to generate a new one.
+                                The registration token expires in 24 hours. After that, you'll need to generate a new one.
                             </p>
                         </div>
 

@@ -59,7 +59,7 @@ function Install-ServerKitAgent {
 
     # Construct download URL
     if ([string]::IsNullOrEmpty($DownloadUrl)) {
-        $DownloadUrl = "$Server/downloads/agent/serverkit-agent-windows-$Arch.exe"
+        $DownloadUrl = "$Server/api/v1/servers/agent/download/windows/$Arch"
     }
 
     # Download agent

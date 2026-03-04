@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/serverkit/agent/internal/agent"
@@ -309,8 +310,19 @@ func runRegister(token, serverURL, name string) error {
 	cfg.Auth.APIKey = result.APIKey
 	cfg.Auth.APISecret = result.APISecret
 
-	// Save config
-	if err := cfg.Save(config.DefaultConfigPath()); err != nil {
+	// Determine config path (use --config flag if set, otherwise default)
+	configPath := cfgFile
+	if configPath == "" {
+		configPath = config.DefaultConfigPath()
+	}
+
+	// Update key file path to be relative to config directory if using custom path
+	if cfgFile != "" {
+		cfg.Auth.KeyFile = filepath.Join(filepath.Dir(configPath), "agent.key")
+	}
+
+	// Save config (key_file path must be set before saving)
+	if err := cfg.Save(configPath); err != nil {
 		return fmt.Errorf("failed to save config: %w", err)
 	}
 

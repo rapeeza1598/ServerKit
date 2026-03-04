@@ -103,7 +103,7 @@ func (r *Registration) Register(serverURL, token, name string) (*RegistrationRes
 	}
 
 	// Make registration request
-	registrationURL := serverURL + "/api/v1/agents/register"
+	registrationURL := serverURL + "/api/v1/servers/register"
 	r.log.Info("Sending registration request", "url", registrationURL)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", registrationURL, bytes.NewReader(bodyBytes))
