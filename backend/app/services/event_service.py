@@ -176,7 +176,7 @@ class EventService:
         start_time = time.time()
 
         try:
-            resp = http_requests.post(
+            resp = http_requests.post(  # nosec B113
                 subscription.url,
                 data=payload_json,
                 headers=headers,

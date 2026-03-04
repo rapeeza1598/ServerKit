@@ -48,9 +48,11 @@ ServiceControl = _module.ServiceControl
 class TestRunPrivileged:
     """Tests for :func:`run_privileged`."""
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_prepends_sudo_when_not_root(self, _euid, mock_run):
+    def test_prepends_sudo_when_not_root(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         run_privileged(['systemctl', 'restart', 'nginx'])
         mock_run.assert_called_once_with(
@@ -104,9 +106,11 @@ class TestRunPrivileged:
         _, kwargs = mock_run.call_args
         assert kwargs['capture_output'] is False
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_string_command_gets_sudo(self, _euid, mock_run):
+    def test_string_command_gets_sudo(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         run_privileged('systemctl restart nginx')
         args, _ = mock_run.call_args
@@ -227,9 +231,10 @@ class TestPackageManager:
 
     # -- install --
 
+    @patch('app.utils.system.os.name', 'posix')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    @patch('app.utils.system.shutil.which', side_effect=lambda c: '/usr/bin/apt' if c == 'apt' else None)
+    @patch('app.utils.system.shutil.which', side_effect=lambda c: '/usr/bin/apt' if c == 'apt' else ('/usr/bin/sudo' if c == 'sudo' else None))
     def test_install_apt(self, _which, _euid, mock_run):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         result = PackageManager.install(['nginx', 'curl'])
@@ -238,9 +243,10 @@ class TestPackageManager:
             capture_output=True, text=True, timeout=300,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    @patch('app.utils.system.shutil.which', side_effect=lambda c: '/usr/bin/dnf' if c == 'dnf' else None)
+    @patch('app.utils.system.shutil.which', side_effect=lambda c: '/usr/bin/dnf' if c == 'dnf' else ('/usr/bin/sudo' if c == 'sudo' else None))
     def test_install_dnf(self, _which, _euid, mock_run):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         PackageManager.install('nginx')
@@ -259,9 +265,11 @@ class TestPackageManager:
 class TestServiceControl:
     """Tests for :class:`ServiceControl`."""
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_start(self, _euid, mock_run):
+    def test_start(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.start('nginx')
         mock_run.assert_called_once_with(
@@ -269,9 +277,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_stop(self, _euid, mock_run):
+    def test_stop(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.stop('nginx')
         mock_run.assert_called_once_with(
@@ -279,9 +289,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_restart(self, _euid, mock_run):
+    def test_restart(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.restart('nginx')
         mock_run.assert_called_once_with(
@@ -289,9 +301,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_reload(self, _euid, mock_run):
+    def test_reload(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.reload('nginx')
         mock_run.assert_called_once_with(
@@ -299,9 +313,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_enable(self, _euid, mock_run):
+    def test_enable(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.enable('nginx')
         mock_run.assert_called_once_with(
@@ -309,9 +325,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_disable(self, _euid, mock_run):
+    def test_disable(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.disable('nginx')
         mock_run.assert_called_once_with(
@@ -319,9 +337,11 @@ class TestServiceControl:
             capture_output=True, text=True,
         )
 
+    @patch('app.utils.system.os.name', 'posix')
+    @patch('app.utils.system.shutil.which', return_value='/usr/bin/sudo')
     @patch('app.utils.system.subprocess.run')
     @patch('app.utils.system.os.geteuid', return_value=1000, create=True)
-    def test_daemon_reload(self, _euid, mock_run):
+    def test_daemon_reload(self, _euid, mock_run, _which):
         mock_run.return_value = subprocess.CompletedProcess([], 0)
         ServiceControl.daemon_reload()
         mock_run.assert_called_once_with(
