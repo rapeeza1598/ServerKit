@@ -19,6 +19,15 @@
             }
         }
     }
+
+    // Global SVG rule for buttons
+    .btn svg {
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
 }
 
 // Stats icons
@@ -50,7 +59,12 @@
 
 .cron-item {
     .list-item-base();
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, background-color 0.15s ease;
+    cursor: pointer;
+
+    &:hover {
+        background: @bg-hover;
+    }
 
     &.disabled {
         opacity: 0.6;
@@ -160,6 +174,54 @@
         &:hover {
             background: fade(@success, 20%);
         }
+    }
+}
+
+// Run output display
+.run-output {
+    display: flex;
+    flex-direction: column;
+    gap: @space-4;
+}
+
+.run-output-exit {
+    display: flex;
+    align-items: center;
+    gap: @space-3;
+}
+
+.run-output-label {
+    font-size: @font-size-sm;
+    font-weight: @font-weight-semibold;
+    color: @text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.run-output-section {
+    display: flex;
+    flex-direction: column;
+    gap: @space-2;
+}
+
+.run-output-pre {
+    font-family: @font-mono;
+    font-size: @font-size-xs;
+    background: @bg-hover;
+    color: @text-primary;
+    padding: @space-3;
+    border-radius: @radius-md;
+    border: 1px solid @border-subtle;
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+
+    &--error {
+        color: @danger;
+        border-color: fade(@danger, 20%);
+        background: fade(@danger, 5%);
     }
 }
 

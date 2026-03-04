@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+
+const VALID_TABS = ['overview', 'alerts', 'config', 'thresholds'];
 
 const Monitoring = () => {
     const toast = useToast();
@@ -10,7 +13,7 @@ const Monitoring = () => {
     const [alertHistory, setAlertHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam('/monitoring', VALID_TABS);
 
     // Config form state
     const [configForm, setConfigForm] = useState({

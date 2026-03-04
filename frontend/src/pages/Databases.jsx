@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import QueryRunner from '../components/QueryRunner';
 
+const VALID_TABS = ['mysql', 'postgresql', 'docker', 'backups', 'sqlite'];
+
 const Databases = () => {
-    const [activeTab, setActiveTab] = useState('mysql');
+    const { tab } = useParams();
+    const [activeTab, setActiveTab] = useTabParam('/databases', VALID_TABS);
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -18,7 +23,7 @@ const Databases = () => {
             setStatus(data);
 
             // Default to available server
-            if (!data.mysql.running && data.postgresql.running) {
+            if (!tab && !data.mysql.running && data.postgresql.running) {
                 setActiveTab('postgresql');
             }
         } catch (err) {

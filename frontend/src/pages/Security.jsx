@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useToast } from '../contexts/ToastContext';
 
+const VALID_TABS = ['overview', 'firewall', 'fail2ban', 'ssh-keys', 'ip-lists', 'scanner', 'quarantine', 'integrity', 'audit', 'vulnerability', 'updates', 'events', 'settings'];
+
 const Security = () => {
     const { isAdmin } = useAuth();
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam('/security', VALID_TABS);
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
 

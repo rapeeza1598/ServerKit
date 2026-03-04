@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import { api } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import Spinner from '../components/Spinner';
 import ConfirmDialog from '../components/ConfirmDialog';
+
+const VALID_TABS = ['overview', 'users', 'connections', 'logs'];
 
 function FTPServer() {
     const [status, setStatus] = useState(null);
@@ -11,7 +14,7 @@ function FTPServer() {
     const [config, setConfig] = useState(null);
     const [logs, setLogs] = useState('');
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam('/ftp', VALID_TABS);
     const [showUserModal, setShowUserModal] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showInstallModal, setShowInstallModal] = useState(false);

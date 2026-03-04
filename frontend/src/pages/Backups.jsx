@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import { Upload, Download, Check, AlertTriangle, Clock, Database, Package, FolderArchive, HardDrive, Cloud, CloudOff, RefreshCw, Trash2, Plus, Settings, CheckCircle, XCircle, Server, FileArchive } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+
+const VALID_TABS = ['backups', 'schedules', 'storage', 'settings'];
 
 const Backups = () => {
     const toast = useToast();
@@ -13,7 +16,7 @@ const Backups = () => {
     const [apps, setApps] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeTab, setActiveTab] = useState('backups');
+    const [activeTab, setActiveTab] = useTabParam('/backups', VALID_TABS);
     const [filterType, setFilterType] = useState('all');
 
     // Modal states

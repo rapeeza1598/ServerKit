@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ExternalLink, Settings, RefreshCw, Plus, Database, GitBranch, Package, Palette, Archive } from 'lucide-react';
+import useTabParam from '../hooks/useTabParam';
 import wordpressApi from '../services/wordpress';
 import { useToast } from '../contexts/ToastContext';
 import { EnvironmentCard, SnapshotTable, GitConnectForm, CommitList } from '../components/wordpress';
@@ -59,13 +60,15 @@ const DetailPageSkeleton = () => (
     </div>
 );
 
+const VALID_TABS = ['overview', 'environments', 'database', 'plugins', 'themes', 'git', 'backups'];
+
 const WordPressDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
     const [site, setSite] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam(`/wordpress/${id}`, VALID_TABS);
 
     useEffect(() => {
         loadSite();

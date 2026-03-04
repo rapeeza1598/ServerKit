@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import { api } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import Spinner from '../components/Spinner';
 import ConfirmDialog from '../components/ConfirmDialog';
 
+const VALID_TABS = ['overview', 'repositories', 'access', 'webhooks', 'deployments', 'settings'];
+
 function Git() {
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam('/git', VALID_TABS);
     const [showInstallModal, setShowInstallModal] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [confirmDialog, setConfirmDialog] = useState(null);

@@ -2044,6 +2044,13 @@ class ApiService {
         });
     }
 
+    async updateCronJob(jobId, data) {
+        return this.request(`/cron/jobs/${jobId}`, {
+            method: 'PUT',
+            body: data
+        });
+    }
+
     async deleteCronJob(jobId) {
         return this.request(`/cron/jobs/${jobId}`, { method: 'DELETE' });
     }

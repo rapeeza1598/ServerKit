@@ -499,10 +499,82 @@ class CronService:
         """Get available schedule presets."""
         return {
             'success': True,
-            'presets': [
-                {'name': name, 'schedule': schedule, 'description': cls._describe_schedule(schedule)}
-                for name, schedule in cls.PRESETS.items()
-            ]
+            'presets': cls.PRESETS
+        }
+
+    @classmethod
+    def update_job(cls, job_id: str, name: str = None, command: str = None,
+                   schedule: str = None, description: str = None) -> Dict:
+        """Update an existing cron job."""
+        metadata = cls._load_jobs_metadata()
+
+        if job_id not in metadata.get('jobs', {}):
+            return {'success': False, 'error': 'Job not found'}
+
+        job_data = metadata['jobs'][job_id]
+        old_schedule = job_data.get('schedule', '')
+        old_command = job_data.get('command', '')
+
+        new_schedule = schedule or old_schedule
+        new_command = command or old_command
+
+        if schedule and not cls._validate_schedule(schedule):
+            return {'success': False, 'error': 'Invalid cron schedule format'}
+
+        # Update crontab on Linux if schedule or command changed
+        if cls.is_linux() and (new_schedule != old_schedule or new_command != old_command):
+            try:
+                result = subprocess.run(
+                    ['crontab', '-l'],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+
+                if result.returncode == 0:
+                    old_line = f"{old_schedule} {old_command}"
+                    new_line = f"{new_schedule} {new_command}"
+                    lines = result.stdout.split('\n')
+                    new_lines = []
+                    for line in lines:
+                        if old_line in line:
+                            new_lines.append(new_line)
+                        else:
+                            new_lines.append(line)
+
+                    new_crontab = '\n'.join(new_lines)
+                    process = subprocess.Popen(
+                        ['crontab', '-'],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    stdout, stderr = process.communicate(input=new_crontab, timeout=10)
+
+                    if process.returncode != 0:
+                        return {'success': False, 'error': stderr or 'Failed to update crontab'}
+
+            except subprocess.SubprocessError as e:
+                return {'success': False, 'error': str(e)}
+
+        # Update metadata
+        if name is not None:
+            job_data['name'] = name
+        if command is not None:
+            job_data['command'] = command
+        if schedule is not None:
+            job_data['schedule'] = schedule
+        if description is not None:
+            job_data['description'] = description
+        job_data['updated_at'] = datetime.now().isoformat()
+
+        cls._save_jobs_metadata(metadata)
+
+        return {
+            'success': True,
+            'job_id': job_id,
+            'message': 'Job updated successfully'
         }
 
     @classmethod

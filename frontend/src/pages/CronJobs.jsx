@@ -11,8 +11,10 @@ const CronJobs = () => {
     const [error, setError] = useState(null);
 
     // Modal states
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showJobModal, setShowJobModal] = useState(false);
+    const [editingJob, setEditingJob] = useState(null);
     const [runningJobId, setRunningJobId] = useState(null);
+    const [runOutput, setRunOutput] = useState(null);
 
     // Form state
     const [jobForm, setJobForm] = useState({
@@ -47,23 +49,55 @@ const CronJobs = () => {
         }
     };
 
-    const handleCreateJob = async (e) => {
+    const openCreateModal = () => {
+        setEditingJob(null);
+        resetForm();
+        setShowJobModal(true);
+    };
+
+    const openEditModal = (job) => {
+        setEditingJob(job);
+        const presetKey = Object.entries(presets).find(([, v]) => v === job.schedule)?.[0];
+        setJobForm({
+            name: job.name || '',
+            command: job.command || '',
+            schedule: job.schedule || '',
+            description: job.description || '',
+            usePreset: !!presetKey,
+            preset: presetKey || 'daily'
+        });
+        setShowJobModal(true);
+    };
+
+    const closeJobModal = () => {
+        setShowJobModal(false);
+        setEditingJob(null);
+        resetForm();
+    };
+
+    const handleSubmitJob = async (e) => {
         e.preventDefault();
         try {
             const schedule = jobForm.usePreset
                 ? presets[jobForm.preset]
                 : jobForm.schedule;
 
-            await api.createCronJob({
+            const payload = {
                 name: jobForm.name,
                 command: jobForm.command,
                 schedule: schedule,
                 description: jobForm.description
-            });
+            };
 
-            toast.success('Cron job created successfully');
-            setShowCreateModal(false);
-            resetForm();
+            if (editingJob) {
+                await api.updateCronJob(editingJob.id, payload);
+                toast.success('Cron job updated successfully');
+            } else {
+                await api.createCronJob(payload);
+                toast.success('Cron job created successfully');
+            }
+
+            closeJobModal();
             loadData();
         } catch (err) {
             toast.error(err.message);
@@ -96,7 +130,13 @@ const CronJobs = () => {
             setRunningJobId(jobId);
             const result = await api.runCronJob(jobId);
             if (result.success) {
-                toast.success('Job executed successfully');
+                setRunOutput({
+                    jobId,
+                    jobName: jobs.find(j => j.id === jobId)?.name || jobId,
+                    exitCode: result.exit_code,
+                    stdout: result.stdout,
+                    stderr: result.stderr
+                });
             } else {
                 toast.error(result.error || 'Job execution failed');
             }
@@ -116,14 +156,6 @@ const CronJobs = () => {
             usePreset: true,
             preset: 'daily'
         });
-    };
-
-    const formatSchedule = (schedule) => {
-        const presetEntry = Object.entries(presets).find(([, value]) => value === schedule);
-        if (presetEntry) {
-            return presetEntry[0].replace(/_/g, ' ');
-        }
-        return schedule;
     };
 
     const getScheduleDescription = (schedule) => {
@@ -154,17 +186,17 @@ const CronJobs = () => {
                     <h1>Cron Jobs</h1>
                     <p className="page-subtitle">Manage scheduled tasks and automated jobs</p>
                 </div>
-                <div className="page-actions">
+                <div className="page-header-actions">
                     <button className="btn btn-secondary" onClick={loadData}>
-                        <svg viewBox="0 0 24 24" width="16" height="16">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
                             <polyline points="23 4 23 10 17 10"/>
                             <polyline points="1 20 1 14 7 14"/>
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                         </svg>
                         Refresh
                     </button>
-                    <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-                        <svg viewBox="0 0 24 24" width="16" height="16">
+                    <button className="btn btn-primary" onClick={openCreateModal}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
                             <line x1="12" y1="5" x2="12" y2="19"/>
                             <line x1="5" y1="12" x2="19" y2="12"/>
                         </svg>
@@ -184,20 +216,20 @@ const CronJobs = () => {
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon cron">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" strokeWidth="2">
                             <circle cx="12" cy="12" r="10"/>
                             <polyline points="12 6 12 12 16 14"/>
                         </svg>
                     </div>
                     <div className="stat-content">
                         <span className="stat-label">Cron Service</span>
-                        <span className="stat-value">{status?.cron_available ? 'Available' : 'Not Available'}</span>
+                        <span className="stat-value">{status?.available ? 'Available' : 'Not Available'}</span>
                     </div>
                 </div>
 
                 <div className="stat-card">
                     <div className="stat-icon jobs">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" strokeWidth="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
                             <line x1="16" y1="13" x2="8" y2="13"/>
@@ -213,7 +245,7 @@ const CronJobs = () => {
 
                 <div className="stat-card">
                     <div className="stat-icon active">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" strokeWidth="2">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                             <polyline points="22 4 12 14.01 9 11.01"/>
                         </svg>
@@ -226,7 +258,7 @@ const CronJobs = () => {
 
                 <div className="stat-card">
                     <div className="stat-icon platform">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" strokeWidth="2">
                             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                             <line x1="8" y1="21" x2="16" y2="21"/>
                             <line x1="12" y1="17" x2="12" y2="21"/>
@@ -247,23 +279,27 @@ const CronJobs = () => {
                 <div className="card-body">
                     {jobs.length === 0 ? (
                         <div className="empty-state">
-                            <svg viewBox="0 0 24 24" width="48" height="48">
+                            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" fill="none" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10"/>
                                 <polyline points="12 6 12 12 16 14"/>
                             </svg>
                             <h3>No Cron Jobs</h3>
                             <p>No scheduled jobs found. Create your first cron job to automate tasks.</p>
-                            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                            <button className="btn btn-primary" onClick={openCreateModal}>
                                 Create Job
                             </button>
                         </div>
                     ) : (
                         <div className="cron-list">
                             {jobs.map((job) => (
-                                <div key={job.id} className={`cron-item ${!job.enabled ? 'disabled' : ''}`}>
+                                <div
+                                    key={job.id}
+                                    className={`cron-item ${!job.enabled ? 'disabled' : ''}`}
+                                    onClick={() => openEditModal(job)}
+                                >
                                     <div className="cron-item-info">
                                         <div className="cron-item-icon">
-                                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
                                                 <circle cx="12" cy="12" r="10"/>
                                                 <polyline points="12 6 12 12 16 14"/>
                                             </svg>
@@ -290,7 +326,7 @@ const CronJobs = () => {
                                         </span>
                                     </div>
 
-                                    <div className="cron-item-actions">
+                                    <div className="cron-item-actions" onClick={e => e.stopPropagation()}>
                                         <button
                                             className="btn btn-sm btn-secondary"
                                             onClick={() => handleRunJob(job.id)}
@@ -304,6 +340,16 @@ const CronJobs = () => {
                                                     <polygon points="5 3 19 12 5 21 5 3"/>
                                                 </svg>
                                             )}
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => openEditModal(job)}
+                                            title="Edit"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="14" height="14">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
                                         </button>
                                         <button
                                             className={`btn btn-sm ${job.enabled ? 'btn-warning' : 'btn-success'}`}
@@ -339,15 +385,15 @@ const CronJobs = () => {
                 </div>
             </div>
 
-            {/* Create Job Modal */}
-            {showCreateModal && (
-                <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+            {/* Create/Edit Job Modal */}
+            {showJobModal && (
+                <div className="modal-overlay" onClick={closeJobModal}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Create Cron Job</h2>
-                            <button className="modal-close" onClick={() => setShowCreateModal(false)}>&times;</button>
+                            <h2>{editingJob ? 'Edit Cron Job' : 'Create Cron Job'}</h2>
+                            <button className="modal-close" onClick={closeJobModal}>&times;</button>
                         </div>
-                        <form onSubmit={handleCreateJob}>
+                        <form onSubmit={handleSubmitJob}>
                             <div className="modal-body">
                                 <div className="form-group">
                                     <label>Job Name</label>
@@ -424,12 +470,54 @@ const CronJobs = () => {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
+                                <button type="button" className="btn btn-secondary" onClick={closeJobModal}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary">Create Job</button>
+                                <button type="submit" className="btn btn-primary">
+                                    {editingJob ? 'Save Changes' : 'Create Job'}
+                                </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Run Output Modal */}
+            {runOutput && (
+                <div className="modal-overlay" onClick={() => setRunOutput(null)}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Run Output: {runOutput.jobName}</h2>
+                            <button className="modal-close" onClick={() => setRunOutput(null)}>&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="run-output">
+                                <div className="run-output-exit">
+                                    <span className="run-output-label">Exit Code</span>
+                                    <span className={`badge badge-${runOutput.exitCode === 0 ? 'success' : 'danger'}`}>
+                                        {runOutput.exitCode}
+                                    </span>
+                                </div>
+                                {runOutput.stdout && (
+                                    <div className="run-output-section">
+                                        <span className="run-output-label">stdout</span>
+                                        <pre className="run-output-pre">{runOutput.stdout}</pre>
+                                    </div>
+                                )}
+                                {runOutput.stderr && (
+                                    <div className="run-output-section">
+                                        <span className="run-output-label">stderr</span>
+                                        <pre className="run-output-pre run-output-pre--error">{runOutput.stderr}</pre>
+                                    </div>
+                                )}
+                                {!runOutput.stdout && !runOutput.stderr && (
+                                    <p className="text-muted">No output produced.</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setRunOutput(null)}>Close</button>
+                        </div>
                     </div>
                 </div>
             )}

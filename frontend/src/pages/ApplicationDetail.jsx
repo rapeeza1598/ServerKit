@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GitBranch } from 'lucide-react';
 import api from '../services/api';
+import useTabParam from '../hooks/useTabParam';
 import { useToast } from '../contexts/ToastContext';
 import EnvironmentVariables from '../components/EnvironmentVariables';
 import PrivateURLSection from '../components/PrivateURLSection';
 import LinkedAppsSection from '../components/LinkedAppsSection';
 import LinkAppModal from '../components/LinkAppModal';
 
+const VALID_TABS = ['overview', 'environment', 'packages', 'gunicorn', 'commands', 'build', 'deploy', 'logs', 'settings'];
+
 const ApplicationDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [app, setApp] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useTabParam(`/apps/${id}`, VALID_TABS);
 
     useEffect(() => {
         loadApp();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Plus, ExternalLink, RefreshCw, GitBranch, Search, Shield, Activity, Settings } from 'lucide-react';
+import useTabParam from '../hooks/useTabParam';
 import wordpressApi from '../services/wordpress';
 import { useToast } from '../contexts/ToastContext';
 import {
@@ -24,6 +25,8 @@ import { io } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
 
+const VALID_TABS = ['pipeline', 'activity', 'health'];
+
 const WordPressProject = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -31,7 +34,7 @@ const WordPressProject = () => {
 
     const [pipeline, setPipeline] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('pipeline');
+    const [activeTab, setActiveTab] = useTabParam(`/wordpress/projects/${id}`, VALID_TABS);
     const [showCreateEnvModal, setShowCreateEnvModal] = useState(false);
     const [promoteModal, setPromoteModal] = useState(null);
     const [syncModal, setSyncModal] = useState(null);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
@@ -18,8 +19,10 @@ import {
 } from 'lucide-react';
 import ServerKitLogo from '../assets/ServerKitLogo.svg';
 
+const VALID_TABS = ['profile', 'security', 'appearance', 'notifications', 'system', 'users', 'audit', 'site', 'developer', 'about'];
+
 const Settings = () => {
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useTabParam('/settings', VALID_TABS);
     const { isAdmin } = useAuth();
     const [devMode, setDevMode] = useState(false);
 

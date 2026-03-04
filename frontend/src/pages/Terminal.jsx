@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
+const VALID_TABS = ['logs', 'journal', 'processes', 'services'];
+
 const Terminal = () => {
-    const [activeTab, setActiveTab] = useState('logs');
+    const [activeTab, setActiveTab] = useTabParam('/terminal', VALID_TABS);
 
     return (
         <div className="page terminal-page">

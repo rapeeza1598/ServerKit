@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
@@ -6,8 +7,10 @@ import { useToast } from '../contexts/ToastContext';
 const ServerContext = createContext({ serverId: 'local', serverName: 'Local' });
 const useServer = () => useContext(ServerContext);
 
+const VALID_TABS = ['containers', 'compose', 'images', 'volumes', 'networks'];
+
 const Docker = () => {
-    const [activeTab, setActiveTab] = useState('containers');
+    const [activeTab, setActiveTab] = useTabParam('/docker', VALID_TABS);
     const [dockerStatus, setDockerStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     const [servers, setServers] = useState([]);

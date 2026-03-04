@@ -71,9 +71,13 @@ function PageTitleUpdater() {
         const path = location.pathname;
         let title = PAGE_TITLES[path];
 
-        // Handle dynamic routes
+        // Handle dynamic routes and tab sub-routes
         if (!title) {
-            if (path.startsWith('/apps/')) title = 'Application Details';
+            // Check if it's a base page with a tab suffix (e.g., /security/firewall)
+            const basePath = '/' + path.split('/')[1];
+            if (PAGE_TITLES[basePath]) {
+                title = PAGE_TITLES[basePath];
+            } else if (path.startsWith('/apps/')) title = 'Application Details';
             else if (path.startsWith('/servers/')) title = 'Server Details';
             else if (path.startsWith('/wordpress/projects/')) title = 'WordPress Pipeline';
             else if (path.startsWith('/wordpress/')) title = 'WordPress Site';
@@ -161,30 +165,42 @@ function AppRoutes() {
                 <Route index element={<Dashboard />} />
                 <Route path="apps" element={<Applications />} />
                 <Route path="apps/:id" element={<ApplicationDetail />} />
+                <Route path="apps/:id/:tab" element={<ApplicationDetail />} />
                 <Route path="wordpress" element={<WordPress />} />
                 <Route path="wordpress/projects" element={<WordPressProjects />} />
                 <Route path="wordpress/projects/:id" element={<WordPressProject />} />
+                <Route path="wordpress/projects/:id/:tab" element={<WordPressProject />} />
                 <Route path="wordpress/:id" element={<WordPressDetail />} />
+                <Route path="wordpress/:id/:tab" element={<WordPressDetail />} />
                 <Route path="templates" element={<Templates />} />
                 <Route path="workflow" element={<WorkflowBuilder />} />
                 <Route path="domains" element={<Domains />} />
                 <Route path="databases" element={<Databases />} />
+                <Route path="databases/:tab" element={<Databases />} />
                 <Route path="ssl" element={<SSLCertificates />} />
                 <Route path="docker" element={<Docker />} />
+                <Route path="docker/:tab" element={<Docker />} />
                 <Route path="servers" element={<Servers />} />
                 <Route path="servers/:id" element={<ServerDetail />} />
                 <Route path="servers/:id/:tab" element={<ServerDetail />} />
                 <Route path="downloads" element={<Downloads />} />
-                <Route path="firewall" element={<Navigate to="/security" replace />} />
+                <Route path="firewall" element={<Navigate to="/security/firewall" replace />} />
                 <Route path="git" element={<Git />} />
+                <Route path="git/:tab" element={<Git />} />
                 <Route path="files" element={<FileManager />} />
                 <Route path="ftp" element={<FTPServer />} />
+                <Route path="ftp/:tab" element={<FTPServer />} />
                 <Route path="monitoring" element={<Monitoring />} />
+                <Route path="monitoring/:tab" element={<Monitoring />} />
                 <Route path="backups" element={<Backups />} />
+                <Route path="backups/:tab" element={<Backups />} />
                 <Route path="cron" element={<CronJobs />} />
                 <Route path="security" element={<Security />} />
+                <Route path="security/:tab" element={<Security />} />
                 <Route path="terminal" element={<Terminal />} />
+                <Route path="terminal/:tab" element={<Terminal />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="settings/:tab" element={<Settings />} />
             </Route>
         </Routes>
     );

@@ -57,6 +57,25 @@ def create_job():
     return jsonify(result), 400
 
 
+@cron_bp.route('/jobs/<job_id>', methods=['PUT'])
+@admin_required
+def update_job(job_id):
+    """Update a cron job."""
+    data = request.get_json()
+
+    result = CronService.update_job(
+        job_id=job_id,
+        name=data.get('name'),
+        command=data.get('command'),
+        schedule=data.get('schedule'),
+        description=data.get('description')
+    )
+
+    if result.get('success'):
+        return jsonify(result)
+    return jsonify(result), 400
+
+
 @cron_bp.route('/jobs/<job_id>', methods=['DELETE'])
 @admin_required
 def delete_job(job_id):
