@@ -80,7 +80,12 @@ print_success "Backend service stopped"
 
 print_info "Stopping Docker containers"
 
+# safety check: docker installed and install directory exists
+if command -v docker &>/dev/null && [ -d "$INSTALL_DIR" ]; then
 docker compose -C "$INSTALL_DIR" down --remove-orphans 2>/dev/null || true
+else
+print_warning "Docker or install directory not found, skipping container cleanup"
+fi
 
 print_success "Containers removed"
 
