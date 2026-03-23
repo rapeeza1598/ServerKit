@@ -413,22 +413,22 @@ Make the agent extensible — let users add custom capabilities without modifyin
 
 ---
 
-## Phase 29: Server Templates & Config Sync (Planned)
+## Phase 29: Server Templates & Config Sync (Completed)
 
 **Priority: Medium**
 
 Define what a server should look like, apply it, and detect when it drifts.
 
-- [ ] Server template builder — define expected state (packages, services, firewall rules, users, files)
-- [ ] Template library — save and reuse templates (e.g., "Web Server", "Database Server", "Mail Server")
-- [ ] Apply template to server — install packages, configure services, set firewall rules via agent
-- [ ] Config drift detection — periodic comparison of actual vs. expected state
-- [ ] Drift report UI — visual diff showing what changed and when
-- [ ] Auto-remediation option — automatically fix drift back to template (with approval toggle)
-- [ ] Template versioning — track changes to templates over time
-- [ ] Template inheritance — base template + role-specific overrides
-- [ ] Bulk apply — roll out template changes across server groups
-- [ ] Compliance dashboard — percentage of fleet in compliance per template
+- [x] Server template builder — define expected state (packages, services, firewall rules, users, files)
+- [x] Template library — save and reuse templates (e.g., "Web Server", "Database Server", "Mail Server")
+- [x] Apply template to server — install packages, configure services, set firewall rules via agent
+- [x] Config drift detection — periodic comparison of actual vs. expected state
+- [x] Drift report UI — visual diff showing what changed and when
+- [x] Auto-remediation option — automatically fix drift back to template (with approval toggle)
+- [x] Template versioning — track changes to templates over time
+- [x] Template inheritance — base template + role-specific overrides
+- [x] Bulk apply — roll out template changes across server groups
+- [x] Compliance dashboard — percentage of fleet in compliance per template
 
 ---
 

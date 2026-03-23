@@ -230,6 +230,10 @@ def create_app(config_name=None):
     from app.api.agent_plugins import agent_plugins_bp
     app.register_blueprint(agent_plugins_bp, url_prefix='/api/v1/agent-plugins')
 
+    # Register blueprints - Server Templates
+    from app.api.server_templates import server_templates_bp
+    app.register_blueprint(server_templates_bp, url_prefix='/api/v1/server-templates')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService

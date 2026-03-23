@@ -3437,6 +3437,73 @@ class ApiService {
     async getPluginSpec() {
         return this.request('/agent-plugins/spec');
     }
+    // ========================================
+    // Server Templates endpoints
+    // ========================================
+    async getServerTemplates(category) {
+        const query = category ? `?category=${category}` : '';
+        return this.request(`/server-templates/${query}`);
+    }
+
+    async getServerTemplate(id) {
+        return this.request(`/server-templates/${id}`);
+    }
+
+    async getServerTemplateLibrary() {
+        return this.request('/server-templates/library');
+    }
+
+    async createServerTemplateFromLibrary(key) {
+        return this.request(`/server-templates/library/${key}`, { method: 'POST' });
+    }
+
+    async createServerTemplate(data) {
+        return this.request('/server-templates/', { method: 'POST', body: data });
+    }
+
+    async updateServerTemplate(id, data) {
+        return this.request(`/server-templates/${id}`, { method: 'PUT', body: data });
+    }
+
+    async deleteServerTemplate(id) {
+        return this.request(`/server-templates/${id}`, { method: 'DELETE' });
+    }
+
+    async assignServerTemplate(templateId, serverId) {
+        return this.request(`/server-templates/${templateId}/assign`, {
+            method: 'POST', body: { server_id: serverId }
+        });
+    }
+
+    async bulkAssignTemplate(templateId, serverIds) {
+        return this.request(`/server-templates/${templateId}/bulk-assign`, {
+            method: 'POST', body: { server_ids: serverIds }
+        });
+    }
+
+    async getTemplateAssignments(templateId) {
+        return this.request(`/server-templates/${templateId}/assignments`);
+    }
+
+    async unassignTemplate(assignmentId) {
+        return this.request(`/server-templates/assignments/${assignmentId}`, { method: 'DELETE' });
+    }
+
+    async checkTemplateDrift(assignmentId) {
+        return this.request(`/server-templates/assignments/${assignmentId}/check`, { method: 'POST' });
+    }
+
+    async remediateTemplateDrift(assignmentId) {
+        return this.request(`/server-templates/assignments/${assignmentId}/remediate`, { method: 'POST' });
+    }
+
+    async getTemplateCompliance() {
+        return this.request('/server-templates/compliance');
+    }
+
+    async getServerTemplateAssignments(serverId) {
+        return this.request(`/server-templates/server/${serverId}`);
+    }
 }
 
 export const api = new ApiService();

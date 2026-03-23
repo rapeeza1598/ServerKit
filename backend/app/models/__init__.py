@@ -23,6 +23,7 @@ from app.models.event_subscription import EventSubscription, EventDelivery
 from app.models.invitation import Invitation
 from app.models.metric_alert import ServerAlertThreshold, MetricAlert
 from app.models.agent_plugin import AgentPlugin, AgentPluginInstall
+from app.models.server_template import ServerTemplate, ServerTemplateAssignment
 
 __all__ = [
     'User', 'Application', 'Domain', 'EnvironmentVariable', 'EnvironmentVariableHistory',
@@ -35,5 +36,6 @@ __all__ = [
     'OAuthIdentity', 'ApiKey', 'ApiUsageLog', 'ApiUsageSummary',
     'EventSubscription', 'EventDelivery', 'Invitation',
     'ServerAlertThreshold', 'MetricAlert',
-    'AgentPlugin', 'AgentPluginInstall'
+    'AgentPlugin', 'AgentPluginInstall',
+    'ServerTemplate', 'ServerTemplateAssignment'
 ]
