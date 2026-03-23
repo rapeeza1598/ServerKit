@@ -254,6 +254,10 @@ def create_app(config_name=None):
     from app.api.status_pages import status_pages_bp
     app.register_blueprint(status_pages_bp, url_prefix='/api/v1/status')
 
+    # Register blueprints - Cloud Provisioning
+    from app.api.cloud_provisioning import cloud_provisioning_bp
+    app.register_blueprint(cloud_provisioning_bp, url_prefix='/api/v1/cloud')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService

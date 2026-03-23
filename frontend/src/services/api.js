@@ -3764,6 +3764,61 @@ class ApiService {
     async getStatusBadge(slug) {
         return this.request(`/status/badge/${slug}`);
     }
+    // ========================================
+    // Cloud Provisioning endpoints
+    // ========================================
+    async getCloudProviders() {
+        return this.request('/cloud/providers');
+    }
+
+    async createCloudProvider(data) {
+        return this.request('/cloud/providers', { method: 'POST', body: data });
+    }
+
+    async deleteCloudProvider(id) {
+        return this.request(`/cloud/providers/${id}`, { method: 'DELETE' });
+    }
+
+    async getCloudProviderOptions(type) {
+        return this.request(`/cloud/providers/${type}/options`);
+    }
+
+    async getCloudServers(providerId) {
+        const query = providerId ? `?provider_id=${providerId}` : '';
+        return this.request(`/cloud/servers${query}`);
+    }
+
+    async getCloudServer(id) {
+        return this.request(`/cloud/servers/${id}`);
+    }
+
+    async createCloudServer(data) {
+        return this.request('/cloud/servers', { method: 'POST', body: data });
+    }
+
+    async destroyCloudServer(id) {
+        return this.request(`/cloud/servers/${id}`, { method: 'DELETE' });
+    }
+
+    async resizeCloudServer(id, size) {
+        return this.request(`/cloud/servers/${id}/resize`, { method: 'POST', body: { size } });
+    }
+
+    async getCloudSnapshots(serverId) {
+        return this.request(`/cloud/servers/${serverId}/snapshots`);
+    }
+
+    async createCloudSnapshot(serverId, name) {
+        return this.request(`/cloud/servers/${serverId}/snapshots`, { method: 'POST', body: { name } });
+    }
+
+    async deleteCloudSnapshot(id) {
+        return this.request(`/cloud/snapshots/${id}`, { method: 'DELETE' });
+    }
+
+    async getCloudCosts() {
+        return this.request('/cloud/costs');
+    }
 }
 
 export const api = new ApiService();

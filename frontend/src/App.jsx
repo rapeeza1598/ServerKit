@@ -47,6 +47,7 @@ import ServerTemplates from './pages/ServerTemplates';
 import Workspaces from './pages/Workspaces';
 import DNSZones from './pages/DNSZones';
 import StatusPages from './pages/StatusPages';
+import CloudProvision from './pages/CloudProvision';
 
 // Page title mapping
 const PAGE_TITLES = {
@@ -84,6 +85,7 @@ const PAGE_TITLES = {
     '/workspaces': 'Workspaces',
     '/dns': 'DNS Zones',
     '/status-pages': 'Status Pages',
+    '/cloud': 'Cloud Provisioning',
 };
 
 function PageTitleUpdater() {
@@ -225,6 +227,7 @@ function AppRoutes() {
                 <Route path="workspaces" element={<Workspaces />} />
                 <Route path="dns" element={<DNSZones />} />
                 <Route path="status-pages" element={<StatusPages />} />
+                <Route path="cloud" element={<CloudProvision />} />
                 <Route path="downloads" element={<Downloads />} />
                 <Route path="firewall" element={<Navigate to="/security/firewall" replace />} />
                 <Route path="git" element={<Git />} />

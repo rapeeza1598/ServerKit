@@ -519,22 +519,22 @@ Public-facing status page and automated health monitoring.
 
 ---
 
-## Phase 35: Server Provisioning APIs (Planned)
+## Phase 35: Server Provisioning APIs (Completed)
 
 **Priority: Medium**
 
 Spin up and manage cloud servers directly from the panel.
 
-- [ ] DigitalOcean API integration (create/destroy/resize droplets)
-- [ ] Hetzner Cloud API integration
-- [ ] Vultr API integration
-- [ ] Linode/Akamai API integration
-- [ ] Server creation wizard (region, size, OS, SSH keys)
-- [ ] Auto-install ServerKit agent on provisioned servers
-- [ ] Server cost tracking and billing overview
-- [ ] Snapshot management (create/restore/delete)
-- [ ] One-click server cloning
-- [ ] Destroy server with confirmation safeguards
+- [x] DigitalOcean API integration (create/destroy/resize droplets)
+- [x] Hetzner Cloud API integration
+- [x] Vultr API integration
+- [x] Linode/Akamai API integration
+- [x] Server creation wizard (region, size, OS, SSH keys)
+- [x] Auto-install ServerKit agent on provisioned servers
+- [x] Server cost tracking and billing overview
+- [x] Snapshot management (create/restore/delete)
+- [x] One-click server cloning
+- [x] Destroy server with confirmation safeguards
 
 ---
 
