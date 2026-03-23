@@ -3845,6 +3845,38 @@ class ApiService {
     async cleanupJobs() {
         return this.request('/performance/jobs/cleanup', { method: 'POST' });
     }
+    // ========================================
+    // Mobile / PWA endpoints
+    // ========================================
+    async registerPushDevice(subscription, deviceName) {
+        return this.request('/mobile/push/register', {
+            method: 'POST', body: { subscription, device_name: deviceName }
+        });
+    }
+
+    async unregisterPushDevice(endpoint) {
+        return this.request('/mobile/push/unregister', {
+            method: 'POST', body: { endpoint }
+        });
+    }
+
+    async getQuickActions() {
+        return this.request('/mobile/quick-actions');
+    }
+
+    async executeQuickAction(actionId, params = {}) {
+        return this.request(`/mobile/quick-actions/${actionId}`, {
+            method: 'POST', body: params
+        });
+    }
+
+    async getMobileSummary() {
+        return this.request('/mobile/summary');
+    }
+
+    async getOfflineCache() {
+        return this.request('/mobile/offline-cache');
+    }
 }
 
 export const api = new ApiService();

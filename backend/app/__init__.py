@@ -262,6 +262,10 @@ def create_app(config_name=None):
     from app.api.performance import performance_bp
     app.register_blueprint(performance_bp, url_prefix='/api/v1/performance')
 
+    # Register blueprints - Mobile
+    from app.api.mobile import mobile_bp
+    app.register_blueprint(mobile_bp, url_prefix='/api/v1/mobile')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService
