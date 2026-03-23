@@ -3694,6 +3694,76 @@ class ApiService {
     async getNginxLBMethods() {
         return this.request('/nginx/advanced/lb-methods');
     }
+    // ========================================
+    // Status Pages endpoints
+    // ========================================
+    async getStatusPages() {
+        return this.request('/status/');
+    }
+
+    async getStatusPage(id) {
+        return this.request(`/status/${id}`);
+    }
+
+    async createStatusPage(data) {
+        return this.request('/status/', { method: 'POST', body: data });
+    }
+
+    async updateStatusPage(id, data) {
+        return this.request(`/status/${id}`, { method: 'PUT', body: data });
+    }
+
+    async deleteStatusPage(id) {
+        return this.request(`/status/${id}`, { method: 'DELETE' });
+    }
+
+    async getPublicStatusPage(slug) {
+        return this.request(`/status/public/${slug}`);
+    }
+
+    async getStatusPageComponents(pageId) {
+        return this.request(`/status/${pageId}/components`);
+    }
+
+    async createStatusComponent(pageId, data) {
+        return this.request(`/status/${pageId}/components`, { method: 'POST', body: data });
+    }
+
+    async updateStatusComponent(compId, data) {
+        return this.request(`/status/components/${compId}`, { method: 'PUT', body: data });
+    }
+
+    async deleteStatusComponent(compId) {
+        return this.request(`/status/components/${compId}`, { method: 'DELETE' });
+    }
+
+    async runStatusCheck(compId) {
+        return this.request(`/status/components/${compId}/check`, { method: 'POST' });
+    }
+
+    async getStatusCheckHistory(compId, hours = 24) {
+        return this.request(`/status/components/${compId}/history?hours=${hours}`);
+    }
+
+    async getStatusPageIncidents(pageId) {
+        return this.request(`/status/${pageId}/incidents`);
+    }
+
+    async createStatusIncident(pageId, data) {
+        return this.request(`/status/${pageId}/incidents`, { method: 'POST', body: data });
+    }
+
+    async updateStatusIncident(incidentId, data) {
+        return this.request(`/status/incidents/${incidentId}`, { method: 'PUT', body: data });
+    }
+
+    async deleteStatusIncident(incidentId) {
+        return this.request(`/status/incidents/${incidentId}`, { method: 'DELETE' });
+    }
+
+    async getStatusBadge(slug) {
+        return this.request(`/status/badge/${slug}`);
+    }
 }
 
 export const api = new ApiService();

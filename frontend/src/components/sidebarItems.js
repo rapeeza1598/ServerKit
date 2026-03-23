@@ -185,6 +185,13 @@ export const SIDEBAR_ITEMS = [
         icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>'
     },
     {
+        id: 'status-pages',
+        label: 'Status Pages',
+        route: '/status-pages',
+        category: 'operations',
+        icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+    },
+    {
         id: 'workspaces',
         label: 'Workspaces',
         route: '/workspaces',

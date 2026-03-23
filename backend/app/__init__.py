@@ -250,6 +250,10 @@ def create_app(config_name=None):
     from app.api.nginx_advanced import nginx_advanced_bp
     app.register_blueprint(nginx_advanced_bp, url_prefix='/api/v1/nginx/advanced')
 
+    # Register blueprints - Status Pages
+    from app.api.status_pages import status_pages_bp
+    app.register_blueprint(status_pages_bp, url_prefix='/api/v1/status')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService
