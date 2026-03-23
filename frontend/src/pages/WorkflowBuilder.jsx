@@ -11,18 +11,27 @@ import {
     MiniMap
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Server, Database, Globe, Box, Save, FolderOpen, Plus, RefreshCw, Play, Layout, Eye } from 'lucide-react';
+import { Server, Database, Globe, Box, Save, FolderOpen, Plus, RefreshCw, Play, Layout, Eye, Bell, Terminal } from 'lucide-react';
 import api from '../services/api';
 import WorkflowListModal from '../components/workflow/WorkflowListModal';
 import DeploymentProgressModal from '../components/workflow/DeploymentProgressModal';
+import WorkflowExecutionHistory from '../components/workflow/WorkflowExecutionHistory';
 import DockerAppNode from '../components/workflow/nodes/DockerAppNode';
 import DatabaseNode from '../components/workflow/nodes/DatabaseNode';
 import DomainNode from '../components/workflow/nodes/DomainNode';
 import ServiceNode from '../components/workflow/nodes/ServiceNode';
+import TriggerNode from '../components/workflow/nodes/TriggerNode';
+import ScriptNode from '../components/workflow/nodes/ScriptNode';
+import NotificationNode from '../components/workflow/nodes/NotificationNode';
+import LogicIfNode from '../components/workflow/nodes/LogicIfNode';
 import DockerAppConfigPanel from '../components/workflow/panels/DockerAppConfigPanel';
 import DatabaseConfigPanel from '../components/workflow/panels/DatabaseConfigPanel';
 import DomainConfigPanel from '../components/workflow/panels/DomainConfigPanel';
 import ServiceConfigPanel from '../components/workflow/panels/ServiceConfigPanel';
+import TriggerConfigPanel from '../components/workflow/panels/TriggerConfigPanel';
+import ScriptConfigPanel from '../components/workflow/panels/ScriptConfigPanel';
+import NotificationConfigPanel from '../components/workflow/panels/NotificationConfigPanel';
+import LogicIfConfigPanel from '../components/workflow/panels/LogicIfConfigPanel';
 import { isValidConnection as checkValidConnection, getConnectionError, getConnectionType } from '../utils/connectionRules';
 import ConnectionEdge from '../components/workflow/ConnectionEdge';
 
@@ -33,14 +42,22 @@ const nodeTypes = {
     dockerApp: DockerAppNode,
     database: DatabaseNode,
     domain: DomainNode,
-    service: ServiceNode
+    service: ServiceNode,
+    trigger: TriggerNode,
+    script: ScriptNode,
+    notification: NotificationNode,
+    logic_if: LogicIfNode
 };
 
 const nodeColorMap = {
     dockerApp: '#2496ed',
     database: '#f59e0b',
     domain: '#10b981',
-    service: '#6366f1'
+    service: '#6366f1',
+    trigger: '#3b82f6',
+    script: '#6b7280',
+    notification: '#8b5cf6',
+    logic_if: '#f97316'
 };
 
 const edgeTypes = {
@@ -128,6 +145,38 @@ const NodePalette = ({ onAddNode, templates, onAddFromTemplate, existingApps, on
                 </button>
             </div>
 
+            <div className="palette-section">
+                <div className="palette-header">Automation</div>
+                <button
+                    className="palette-item palette-item-trigger"
+                    onClick={() => onAddNode('trigger', { label: 'Manual Trigger', triggerType: 'manual', isActive: true })}
+                >
+                    <Play size={16} />
+                    <span>Trigger</span>
+                </button>
+                <button
+                    className="palette-item palette-item-logic"
+                    onClick={() => onAddNode('logic_if', { label: 'If/Else', condition: '' })}
+                >
+                    <Layout size={16} />
+                    <span>Logic (If/Else)</span>
+                </button>
+                <button
+                    className="palette-item palette-item-script"
+                    onClick={() => onAddNode('script', { label: 'Run Script', language: 'bash', content: '' })}
+                >
+                    <Terminal size={16} />
+                    <span>Script</span>
+                </button>
+                <button
+                    className="palette-item palette-item-notification"
+                    onClick={() => onAddNode('notification', { label: 'Notify', channel: 'discord', message: '' })}
+                >
+                    <Bell size={16} />
+                    <span>Notification</span>
+                </button>
+            </div>
+
             <div className="palette-section palette-section-info">
                 <div className="palette-hint">
                     Tip: Click "Server Overview" to see all your infrastructure with connections
@@ -163,6 +212,11 @@ const WorkflowCanvas = () => {
     const [isDeploying, setIsDeploying] = useState(false);
     const [showDeployModal, setShowDeployModal] = useState(false);
     const [deploymentResults, setDeploymentResults] = useState(null);
+
+    // Automation state
+    const [isExecuting, setIsExecuting] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
+    const [executionId, setExecutionId] = useState(null);
 
     const memoizedNodeTypes = useMemo(() => nodeTypes, []);
     const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
@@ -674,6 +728,32 @@ const WorkflowCanvas = () => {
         }
     }, [currentWorkflow, nodes, edges, workflowName, getViewport, setNodes]);
 
+    // Execute workflow
+    const executeWorkflow = useCallback(async () => {
+        if (!currentWorkflow) {
+            setSaveMessage('Save workflow first');
+            setTimeout(() => setSaveMessage(null), 3000);
+            return;
+        }
+
+        setIsExecuting(true);
+        setSaveMessage('Executing...');
+
+        try {
+            const response = await api.executeWorkflow(currentWorkflow.id);
+            setExecutionId(response.execution_id);
+            setSaveMessage('Execution started');
+            setShowHistory(true);
+            setTimeout(() => setSaveMessage(null), 3000);
+        } catch (error) {
+            console.error('Failed to execute workflow:', error);
+            setSaveMessage('Execution failed');
+            setTimeout(() => setSaveMessage(null), 3000);
+        } finally {
+            setIsExecuting(false);
+        }
+    }, [currentWorkflow]);
+
     const onConnect = useCallback(
         (params) => {
             if (checkValidConnection(params, nodes)) {
@@ -797,6 +877,14 @@ const WorkflowCanvas = () => {
                 return <DomainConfigPanel {...panelProps} />;
             case 'service':
                 return <ServiceConfigPanel {...panelProps} />;
+            case 'trigger':
+                return <TriggerConfigPanel {...panelProps} />;
+            case 'script':
+                return <ScriptConfigPanel {...panelProps} />;
+            case 'notification':
+                return <NotificationConfigPanel {...panelProps} />;
+            case 'logic_if':
+                return <LogicIfConfigPanel {...panelProps} />;
             default:
                 return null;
         }
@@ -843,6 +931,26 @@ const WorkflowCanvas = () => {
                         <FolderOpen size={16} />
                         <span>Load</span>
                     </button>
+                    <div className="toolbar-divider h-6 w-[1px] bg-gray-700 mx-1"></div>
+                    <button
+                        className={`toolbar-btn ${isExecuting ? 'animate-pulse' : ''}`}
+                        onClick={executeWorkflow}
+                        disabled={isExecuting || !currentWorkflow}
+                        title="Execute workflow manually"
+                    >
+                        <Play size={16} className="text-green-400" />
+                        <span>Execute</span>
+                    </button>
+                    <button
+                        className="toolbar-btn"
+                        onClick={() => setShowHistory(true)}
+                        disabled={!currentWorkflow}
+                        title="View execution history"
+                    >
+                        <Activity size={16} />
+                        <span>History</span>
+                    </button>
+                    <div className="toolbar-divider h-6 w-[1px] bg-gray-700 mx-1"></div>
                     <button
                         className="toolbar-btn toolbar-btn-primary"
                         onClick={saveWorkflow}
@@ -925,6 +1033,12 @@ const WorkflowCanvas = () => {
                     results={deploymentResults}
                     nodes={nodes}
                     onClose={() => setShowDeployModal(false)}
+                />
+            )}
+            {showHistory && (
+                <WorkflowExecutionHistory
+                    workflowId={currentWorkflow?.id}
+                    onClose={() => setShowHistory(false)}
                 />
             )}
         </div>

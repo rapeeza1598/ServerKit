@@ -2,7 +2,7 @@ import json
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
-from app.models import Workflow, User
+from app.models import Workflow, User, WorkflowExecution, WorkflowLog
 
 workflows_bp = Blueprint('workflows', __name__)
 
@@ -61,6 +61,9 @@ def create_workflow():
         nodes=json.dumps(data.get('nodes', [])),
         edges=json.dumps(data.get('edges', [])),
         viewport=json.dumps(data.get('viewport')) if data.get('viewport') else None,
+        is_active=data.get('is_active', False),
+        trigger_type=data.get('trigger_type', 'manual'),
+        trigger_config=json.dumps(data.get('trigger_config', {})),
         user_id=current_user_id
     )
 
@@ -101,6 +104,14 @@ def update_workflow(workflow_id):
         workflow.edges = json.dumps(data['edges'])
     if 'viewport' in data:
         workflow.viewport = json.dumps(data['viewport']) if data['viewport'] else None
+    
+    # Automation fields
+    if 'is_active' in data:
+        workflow.is_active = data['is_active']
+    if 'trigger_type' in data:
+        workflow.trigger_type = data['trigger_type']
+    if 'trigger_config' in data:
+        workflow.trigger_config = json.dumps(data['trigger_config'])
 
     db.session.commit()
 
@@ -130,27 +141,103 @@ def delete_workflow(workflow_id):
     return jsonify({'message': 'Workflow deleted successfully'})
 
 
+@workflows_bp.route('/<int:workflow_id>/execute', methods=['POST'])
+@jwt_required()
+def execute_workflow(workflow_id):
+    """Trigger a workflow execution manually."""
+    from app.services.workflow_engine import WorkflowEngine
+
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    workflow = Workflow.query.get(workflow_id)
+
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+
+    if user.role != 'admin' and workflow.user_id != current_user_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    data = request.get_json() or {}
+    context = data.get('context', {})
+
+    execution_id = WorkflowEngine.execute_workflow(
+        workflow_id=workflow_id,
+        trigger_type='manual',
+        context=context
+    )
+
+    return jsonify({
+        'message': 'Workflow execution started',
+        'execution_id': execution_id
+    })
+
+
+@workflows_bp.route('/<int:workflow_id>/executions', methods=['GET'])
+@jwt_required()
+def get_workflow_executions(workflow_id):
+    """Get execution history for a workflow."""
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    workflow = Workflow.query.get(workflow_id)
+
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+
+    if user.role != 'admin' and workflow.user_id != current_user_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    executions = WorkflowExecution.query.filter_by(workflow_id=workflow_id).order_by(WorkflowExecution.started_at.desc()).all()
+
+    return jsonify({
+        'executions': [e.to_dict() for e in executions]
+    })
+
+
+@workflows_bp.route('/executions/<int:execution_id>', methods=['GET'])
+@jwt_required()
+def get_execution_details(execution_id):
+    """Get details for a specific execution."""
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    execution = WorkflowExecution.query.get(execution_id)
+
+    if not execution:
+        return jsonify({'error': 'Execution not found'}), 404
+
+    workflow = execution.workflow
+    if user.role != 'admin' and workflow.user_id != current_user_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    return jsonify(execution.to_dict())
+
+
+@workflows_bp.route('/executions/<int:execution_id>/logs', methods=['GET'])
+@jwt_required()
+def get_execution_logs(execution_id):
+    """Get logs for a specific execution."""
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    execution = WorkflowExecution.query.get(execution_id)
+
+    if not execution:
+        return jsonify({'error': 'Execution not found'}), 404
+
+    workflow = execution.workflow
+    if user.role != 'admin' and workflow.user_id != current_user_id:
+        return jsonify({'error': 'Access denied'}), 403
+
+    logs = WorkflowLog.query.filter_by(execution_id=execution_id).order_by(WorkflowLog.timestamp.asc()).all()
+
+    return jsonify({
+        'logs': [l.to_dict() for l in logs]
+    })
+
+
 @workflows_bp.route('/<int:workflow_id>/deploy', methods=['POST'])
 @jwt_required()
 def deploy_workflow(workflow_id):
     """
     Deploy all resources from a workflow.
-
-    This endpoint converts workflow nodes (Docker apps, databases, domains)
-    into actual infrastructure by calling the appropriate backend services.
-
-    Returns:
-        {
-            "success": boolean,
-            "message": string,
-            "results": [
-                {"nodeId": "node_1", "type": "dockerApp", "success": true, "resourceId": 5},
-                {"nodeId": "node_2", "type": "domain", "success": true, "resourceId": 12},
-                ...
-            ],
-            "errors": [],
-            "workflow": {...updated workflow with resource IDs...}
-        }
     """
     from app.services.workflow_service import WorkflowService
 

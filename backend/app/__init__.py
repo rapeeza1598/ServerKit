@@ -240,6 +240,9 @@ def create_app(config_name=None):
         # Start auto-sync scheduler for WordPress environments
         _start_auto_sync_scheduler(app)
 
+        # Start workflow scheduler
+        _start_workflow_scheduler(app)
+
         # Start API analytics flush thread
         from app.middleware.api_analytics import start_analytics_flush_thread
         start_analytics_flush_thread(app)
@@ -383,3 +386,87 @@ def _start_api_background_threads(app):
         name='api-background'
     )
     _api_bg_thread.start()
+
+
+_workflow_thread = None
+
+
+def _start_workflow_scheduler(app):
+    """Start a background thread that checks for scheduled workflows."""
+    global _workflow_thread
+    if _workflow_thread is not None:
+        return
+
+    import threading
+    import time
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    def workflow_loop():
+        while True:
+            try:
+                time.sleep(60)  # Check every 60 seconds
+                with app.app_context():
+                    _check_workflow_schedules(logger)
+            except Exception as e:
+                logger.error(f'Workflow scheduler error: {e}')
+
+    _workflow_thread = threading.Thread(
+        target=workflow_loop,
+        daemon=True,
+        name='workflow-scheduler'
+    )
+    _workflow_thread.start()
+
+
+def _check_workflow_schedules(logger):
+    """Check all active workflows with cron triggers and run those that are due."""
+    from app.models.workflow import Workflow
+    from app.services.workflow_engine import WorkflowEngine
+    from datetime import datetime
+    import json
+
+    try:
+        from croniter import croniter
+    except ImportError:
+        logger.debug('croniter not installed, skipping workflow schedule check')
+        return
+
+    # Find active workflows with cron triggers
+    workflows = Workflow.query.filter_by(is_active=True, trigger_type='cron').all()
+    if not workflows:
+        return
+
+    now = datetime.utcnow()
+
+    for workflow in workflows:
+        try:
+            config = json.loads(workflow.trigger_config) if workflow.trigger_config else {}
+            cron_expr = config.get('cron')
+            
+            if not cron_expr or not croniter.is_valid(cron_expr):
+                continue
+
+            cron = croniter(cron_expr, now)
+            prev_run = cron.get_prev(datetime)
+
+            # Check if a run was due in the last 90 seconds
+            seconds_since_due = (now - prev_run).total_seconds()
+            
+            # Also ensure we don't run it multiple times for the same slot
+            if 0 < seconds_since_due <= 90:
+                # Check if it already ran in the last 2 minutes
+                if workflow.last_run_at:
+                    seconds_since_last_run = (now - workflow.last_run_at).total_seconds()
+                    if seconds_since_last_run < 110:
+                        continue
+
+                logger.info(f'Scheduled workflow triggered: {workflow.name} (ID: {workflow.id})')
+                WorkflowEngine.execute_workflow(
+                    workflow_id=workflow.id,
+                    trigger_type='cron',
+                    context={'scheduled_at': prev_run.isoformat()}
+                )
+        except Exception as e:
+            logger.error(f'Workflow schedule check failed for workflow {workflow.id}: {e}')

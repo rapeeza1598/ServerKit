@@ -2562,6 +2562,25 @@ class ApiService {
         });
     }
 
+    async executeWorkflow(id, context = {}) {
+        return this.request(`/workflows/${id}/execute`, {
+            method: 'POST',
+            body: { context }
+        });
+    }
+
+    async getWorkflowExecutions(id) {
+        return this.request(`/workflows/${id}/executions`);
+    }
+
+    async getWorkflowExecutionDetails(executionId) {
+        return this.request(`/workflows/executions/${executionId}`);
+    }
+
+    async getWorkflowExecutionLogs(executionId) {
+        return this.request(`/workflows/executions/${executionId}/logs`);
+    }
+
     // ========================================
     // Servers (Multi-Server Management) endpoints
     // ========================================

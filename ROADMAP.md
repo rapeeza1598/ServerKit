@@ -310,12 +310,12 @@ The phases below are ordered by priority. Higher phases ship first.
 
 Moving beyond static design to dynamic, event-driven automation. This turns ServerKit into a powerful automation hub.
 
-- [ ] **Event Triggers:** Run workflows on Git push, health check failure, high CPU usage, or Webhook receipt.
-- [ ] **Cron Integration:** Schedule workflows to run on recurring intervals (e.g., "Every Sunday at 2 AM, backup all DBs and rotate logs").
-- [ ] **Cross-Server Actions:** "When Server A's database is backed up, sync it to Server B and notify Discord."
-- [ ] **Logic Nodes:** If/Else conditions, loops, and custom Python/Shell script execution nodes.
-- [ ] **State Machine:** Track workflow execution history, retries on failure, and execution logs.
-- [ ] **Global Variables:** Pass data between workflow steps (e.g., take the output of a build step and pass it to a deployment step).
+- [x] **Event Triggers:** Run workflows on Git push, health check failure, high CPU usage, or Webhook receipt.
+- [x] **Cron Integration:** Schedule workflows to run on recurring intervals (e.g., "Every Sunday at 2 AM, backup all DBs and rotate logs").
+- [x] **Cross-Server Actions:** "When Server A's database is backed up, sync it to Server B and notify Discord."
+- [x] **Logic Nodes:** If/Else conditions, loops, and custom Python/Shell script execution nodes.
+- [x] **State Machine:** Track workflow execution history, retries on failure, and execution logs.
+- [x] **Global Variables:** Pass data between workflow steps (e.g., take the output of a build step and pass it to a deployment step).
 
 ---
 
