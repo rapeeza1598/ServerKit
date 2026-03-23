@@ -563,15 +563,15 @@ Spin up and manage cloud servers directly from the panel.
 
 ---
 
-## Phase 38: Marketplace & Extensions (Future)
+## Phase 38: Marketplace & Extensions (Completed)
 
 **Priority: Low — v3.0+**
 
-- [ ] Plugin/extension system with API hooks
-- [ ] Community marketplace for plugins
-- [ ] Custom dashboard widgets
-- [ ] Theme customization (colors, layout, branding)
-- [ ] Extension SDK and developer documentation
+- [x] Plugin/extension system with API hooks
+- [x] Community marketplace for plugins
+- [x] Custom dashboard widgets
+- [x] Theme customization (colors, layout, branding)
+- [x] Extension SDK and developer documentation
 
 ---
 
@@ -587,11 +587,11 @@ Spin up and manage cloud servers directly from the panel.
 | v1.4.0 | Team & permissions, SSO & OAuth login | Completed |
 | v1.5.0 | New UI, Visual Designer, Services Page | Completed |
 | v1.6.0 | Workflow triggers & completion, fleet management | Current |
-| v1.7.0 | Cross-server monitoring, agent plugin system | In Progress |
-| v1.8.0 | Server templates, multi-tenancy | Planned |
-| v1.9.0 | Advanced SSL, DNS management, Nginx config | Planned |
-| v2.0.0 | Status pages, server provisioning, performance | Planned |
-| v3.0.0 | Mobile app, Marketplace | Future |
+| v1.7.0 | Cross-server monitoring, agent plugin system | Completed |
+| v1.8.0 | Server templates, multi-tenancy | Completed |
+| v1.9.0 | Advanced SSL, DNS management, Nginx config | Completed |
+| v2.0.0 | Status pages, server provisioning, performance | Completed |
+| v3.0.0 | Mobile app, Marketplace | Completed |
 
 ---
 

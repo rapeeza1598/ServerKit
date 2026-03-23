@@ -3877,6 +3877,62 @@ class ApiService {
     async getOfflineCache() {
         return this.request('/mobile/offline-cache');
     }
+    // ========================================
+    // Marketplace endpoints
+    // ========================================
+    async getMarketplaceExtensions(category, search) {
+        const params = new URLSearchParams();
+        if (category) params.append('category', category);
+        if (search) params.append('search', search);
+        const qs = params.toString();
+        return this.request(`/marketplace/${qs ? '?' + qs : ''}`);
+    }
+
+    async getMarketplaceExtension(id) {
+        return this.request(`/marketplace/${id}`);
+    }
+
+    async createMarketplaceExtension(data) {
+        return this.request('/marketplace/', { method: 'POST', body: data });
+    }
+
+    async updateMarketplaceExtension(id, data) {
+        return this.request(`/marketplace/${id}`, { method: 'PUT', body: data });
+    }
+
+    async publishExtension(id) {
+        return this.request(`/marketplace/${id}/publish`, { method: 'POST' });
+    }
+
+    async deleteMarketplaceExtension(id) {
+        return this.request(`/marketplace/${id}`, { method: 'DELETE' });
+    }
+
+    async installMarketplaceExtension(extId, config) {
+        return this.request(`/marketplace/${extId}/install`, {
+            method: 'POST', body: { config }
+        });
+    }
+
+    async uninstallMarketplaceExtension(installId) {
+        return this.request(`/marketplace/installs/${installId}`, { method: 'DELETE' });
+    }
+
+    async updateMarketplaceExtensionConfig(installId, config) {
+        return this.request(`/marketplace/installs/${installId}/config`, {
+            method: 'PUT', body: { config }
+        });
+    }
+
+    async getMyExtensions() {
+        return this.request('/marketplace/my-extensions');
+    }
+
+    async rateExtension(extId, rating) {
+        return this.request(`/marketplace/${extId}/rate`, {
+            method: 'POST', body: { rating }
+        });
+    }
 }
 
 export const api = new ApiService();

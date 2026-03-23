@@ -266,6 +266,10 @@ def create_app(config_name=None):
     from app.api.mobile import mobile_bp
     app.register_blueprint(mobile_bp, url_prefix='/api/v1/mobile')
 
+    # Register blueprints - Marketplace
+    from app.api.marketplace import marketplace_bp
+    app.register_blueprint(marketplace_bp, url_prefix='/api/v1/marketplace')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService

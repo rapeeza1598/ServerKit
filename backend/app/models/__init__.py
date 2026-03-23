@@ -28,6 +28,7 @@ from app.models.workspace import Workspace, WorkspaceMember, WorkspaceApiKey
 from app.models.dns_zone import DNSZone, DNSRecord
 from app.models.status_page import StatusPage, StatusComponent, HealthCheck, StatusIncident, StatusIncidentUpdate
 from app.models.cloud_server import CloudProvider, CloudServer, CloudSnapshot
+from app.models.marketplace import Extension, ExtensionInstall
 
 __all__ = [
     'User', 'Application', 'Domain', 'EnvironmentVariable', 'EnvironmentVariableHistory',
@@ -45,5 +46,6 @@ __all__ = [
     'Workspace', 'WorkspaceMember', 'WorkspaceApiKey',
     'DNSZone', 'DNSRecord',
     'StatusPage', 'StatusComponent', 'HealthCheck', 'StatusIncident', 'StatusIncidentUpdate',
-    'CloudProvider', 'CloudServer', 'CloudSnapshot'
+    'CloudProvider', 'CloudServer', 'CloudSnapshot',
+    'Extension', 'ExtensionInstall'
 ]
