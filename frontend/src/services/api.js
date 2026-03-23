@@ -3572,6 +3572,38 @@ class ApiService {
     async revokeWorkspaceApiKey(keyId) {
         return this.request(`/workspaces/api-keys/${keyId}/revoke`, { method: 'POST' });
     }
+    // ========================================
+    // Advanced SSL endpoints
+    // ========================================
+    async getSSLProfiles() {
+        return this.request('/ssl/advanced/profiles');
+    }
+
+    async issueWildcardCert(domain, dnsProvider, credentials) {
+        return this.request('/ssl/advanced/wildcard', {
+            method: 'POST', body: { domain, dns_provider: dnsProvider, credentials }
+        });
+    }
+
+    async issueSANCert(domains) {
+        return this.request('/ssl/advanced/san', {
+            method: 'POST', body: { domains }
+        });
+    }
+
+    async uploadCustomCert(domain, certificate, privateKey, chain) {
+        return this.request('/ssl/advanced/upload', {
+            method: 'POST', body: { domain, certificate, private_key: privateKey, chain }
+        });
+    }
+
+    async getSSLHealth(domain) {
+        return this.request(`/ssl/advanced/health/${domain}`);
+    }
+
+    async getSSLExpiryAlerts(days = 30) {
+        return this.request(`/ssl/advanced/expiry-alerts?days=${days}`);
+    }
 }
 
 export const api = new ApiService();

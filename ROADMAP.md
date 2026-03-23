@@ -451,17 +451,17 @@ Isolate servers by team, client, or project. Essential for agencies, MSPs, and l
 
 ---
 
-## Phase 31: Advanced SSL Features (Planned)
+## Phase 31: Advanced SSL Features (Completed)
 
 **Priority: Medium**
 
 - [x] Certificate expiry monitoring
-- [ ] Wildcard SSL certificates via DNS-01 challenge
-- [ ] Multi-domain certificates (SAN)
-- [ ] Custom certificate upload (key + cert + chain)
-- [ ] Certificate expiry notifications (email/webhook alerts before expiration)
-- [ ] SSL configuration templates (modern, intermediate, legacy compatibility)
-- [ ] SSL health check dashboard (grade, cipher suites, protocol versions)
+- [x] Wildcard SSL certificates via DNS-01 challenge
+- [x] Multi-domain certificates (SAN)
+- [x] Custom certificate upload (key + cert + chain)
+- [x] Certificate expiry notifications (email/webhook alerts before expiration)
+- [x] SSL configuration templates (modern, intermediate, legacy compatibility)
+- [x] SSL health check dashboard (grade, cipher suites, protocol versions)
 
 ---
 
