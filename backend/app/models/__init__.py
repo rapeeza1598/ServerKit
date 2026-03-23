@@ -24,6 +24,7 @@ from app.models.invitation import Invitation
 from app.models.metric_alert import ServerAlertThreshold, MetricAlert
 from app.models.agent_plugin import AgentPlugin, AgentPluginInstall
 from app.models.server_template import ServerTemplate, ServerTemplateAssignment
+from app.models.workspace import Workspace, WorkspaceMember, WorkspaceApiKey
 
 __all__ = [
     'User', 'Application', 'Domain', 'EnvironmentVariable', 'EnvironmentVariableHistory',
@@ -37,5 +38,6 @@ __all__ = [
     'EventSubscription', 'EventDelivery', 'Invitation',
     'ServerAlertThreshold', 'MetricAlert',
     'AgentPlugin', 'AgentPluginInstall',
-    'ServerTemplate', 'ServerTemplateAssignment'
+    'ServerTemplate', 'ServerTemplateAssignment',
+    'Workspace', 'WorkspaceMember', 'WorkspaceApiKey'
 ]

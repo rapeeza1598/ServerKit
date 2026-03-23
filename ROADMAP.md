@@ -432,22 +432,22 @@ Define what a server should look like, apply it, and detect when it drifts.
 
 ---
 
-## Phase 30: Multi-Tenancy & Workspaces (Planned)
+## Phase 30: Multi-Tenancy & Workspaces (Completed)
 
 **Priority: Medium**
 
 Isolate servers by team, client, or project. Essential for agencies, MSPs, and larger teams.
 
-- [ ] Workspace model — isolated container for servers, users, and settings
-- [ ] Workspace CRUD — create, rename, archive workspaces
-- [ ] Server assignment — each server belongs to exactly one workspace
-- [ ] User workspace membership — users can belong to multiple workspaces with different roles
-- [ ] Workspace switching — quick-switch dropdown in the header
-- [ ] Per-workspace settings — notification preferences, default templates, branding
-- [ ] Workspace-scoped API keys — API keys restricted to a single workspace
-- [ ] Cross-workspace admin view — super-admin can see all workspaces and usage
-- [ ] Workspace usage quotas — limit servers, users, or API calls per workspace
-- [ ] Workspace billing integration — track resource usage per workspace for invoicing
+- [x] Workspace model — isolated container for servers, users, and settings
+- [x] Workspace CRUD — create, rename, archive workspaces
+- [x] Server assignment — each server belongs to exactly one workspace
+- [x] User workspace membership — users can belong to multiple workspaces with different roles
+- [x] Workspace switching — quick-switch dropdown in the header
+- [x] Per-workspace settings — notification preferences, default templates, branding
+- [x] Workspace-scoped API keys — API keys restricted to a single workspace
+- [x] Cross-workspace admin view — super-admin can see all workspaces and usage
+- [x] Workspace usage quotas — limit servers, users, or API calls per workspace
+- [x] Workspace billing integration — track resource usage per workspace for invoicing
 
 ---
 

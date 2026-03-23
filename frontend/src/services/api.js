@@ -3504,6 +3504,74 @@ class ApiService {
     async getServerTemplateAssignments(serverId) {
         return this.request(`/server-templates/server/${serverId}`);
     }
+    // ========================================
+    // Workspaces endpoints
+    // ========================================
+    async getWorkspaces(params = {}) {
+        const query = new URLSearchParams();
+        if (params.all) query.append('all', 'true');
+        if (params.include_archived) query.append('include_archived', 'true');
+        const qs = query.toString();
+        return this.request(`/workspaces/${qs ? '?' + qs : ''}`);
+    }
+
+    async getWorkspace(id) {
+        return this.request(`/workspaces/${id}`);
+    }
+
+    async createWorkspace(data) {
+        return this.request('/workspaces/', { method: 'POST', body: data });
+    }
+
+    async updateWorkspace(id, data) {
+        return this.request(`/workspaces/${id}`, { method: 'PUT', body: data });
+    }
+
+    async archiveWorkspace(id) {
+        return this.request(`/workspaces/${id}/archive`, { method: 'POST' });
+    }
+
+    async restoreWorkspace(id) {
+        return this.request(`/workspaces/${id}/restore`, { method: 'POST' });
+    }
+
+    async deleteWorkspace(id) {
+        return this.request(`/workspaces/${id}`, { method: 'DELETE' });
+    }
+
+    async getWorkspaceMembers(workspaceId) {
+        return this.request(`/workspaces/${workspaceId}/members`);
+    }
+
+    async addWorkspaceMember(workspaceId, userId, role) {
+        return this.request(`/workspaces/${workspaceId}/members`, {
+            method: 'POST', body: { user_id: userId, role: role || 'member' }
+        });
+    }
+
+    async updateWorkspaceMemberRole(memberId, role) {
+        return this.request(`/workspaces/members/${memberId}/role`, {
+            method: 'PUT', body: { role }
+        });
+    }
+
+    async removeWorkspaceMember(memberId) {
+        return this.request(`/workspaces/members/${memberId}`, { method: 'DELETE' });
+    }
+
+    async getWorkspaceApiKeys(workspaceId) {
+        return this.request(`/workspaces/${workspaceId}/api-keys`);
+    }
+
+    async createWorkspaceApiKey(workspaceId, name, scopes) {
+        return this.request(`/workspaces/${workspaceId}/api-keys`, {
+            method: 'POST', body: { name, scopes }
+        });
+    }
+
+    async revokeWorkspaceApiKey(keyId) {
+        return this.request(`/workspaces/api-keys/${keyId}/revoke`, { method: 'POST' });
+    }
 }
 
 export const api = new ApiService();

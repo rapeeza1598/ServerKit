@@ -234,6 +234,10 @@ def create_app(config_name=None):
     from app.api.server_templates import server_templates_bp
     app.register_blueprint(server_templates_bp, url_prefix='/api/v1/server-templates')
 
+    # Register blueprints - Workspaces
+    from app.api.workspaces import workspaces_bp
+    app.register_blueprint(workspaces_bp, url_prefix='/api/v1/workspaces')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService
