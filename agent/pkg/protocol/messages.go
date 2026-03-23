@@ -33,6 +33,10 @@ const (
 	// System
 	TypeSystemInfo MessageType = "system_info"
 
+	// Discovery
+	TypeDiscovery        MessageType = "discovery"
+	TypeDiscoveryRequest MessageType = "discovery_request"
+
 	// Credential Rotation
 	TypeCredentialUpdate    MessageType = "credential_update"
 	TypeCredentialUpdateAck MessageType = "credential_update_ack"
@@ -209,6 +213,9 @@ const (
 	ActionTerminalInput  = "terminal:input"
 	ActionTerminalResize = "terminal:resize"
 	ActionTerminalClose  = "terminal:close"
+
+	// Agent actions
+	ActionAgentUpdate = "agent:update"
 )
 
 // Stream channels

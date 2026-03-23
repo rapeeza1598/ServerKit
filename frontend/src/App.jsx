@@ -31,6 +31,7 @@ import Templates from './pages/Templates';
 import WorkflowBuilder from './pages/WorkflowBuilder';
 import Servers from './pages/Servers';
 import ServerDetail from './pages/ServerDetail';
+import AgentFleet from './pages/AgentFleet';
 import Downloads from './pages/Downloads';
 import WordPress from './pages/WordPress';
 import WordPressDetail from './pages/WordPressDetail';
@@ -204,6 +205,7 @@ function AppRoutes() {
                 <Route path="servers" element={<Servers />} />
                 <Route path="servers/:id" element={<ServerDetail />} />
                 <Route path="servers/:id/:tab" element={<ServerDetail />} />
+                <Route path="fleet" element={<AgentFleet />} />
                 <Route path="downloads" element={<Downloads />} />
                 <Route path="firewall" element={<Navigate to="/security/firewall" replace />} />
                 <Route path="git" element={<Git />} />

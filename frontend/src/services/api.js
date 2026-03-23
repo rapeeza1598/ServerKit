@@ -2941,6 +2941,90 @@ class ApiService {
         return `${baseUrl}/api/servers/agent/download/${os}/${arch}`;
     }
 
+    // ========================================
+    // Agent Fleet Management endpoints
+    // ========================================
+    async getFleetHealth() {
+        return this.request('/servers/fleet/health');
+    }
+
+    async getAgentVersions() {
+        return this.request('/servers/fleet/versions');
+    }
+
+    async addAgentVersion(data) {
+        return this.request('/servers/fleet/versions', {
+            method: 'POST',
+            body: data
+        });
+    }
+
+    async upgradeFleet(serverIds, versionId) {
+        return this.request('/servers/fleet/upgrade', {
+            method: 'POST',
+            body: { server_ids: serverIds, version_id: versionId }
+        });
+    }
+
+    async startRollout(data) {
+        return this.request('/servers/fleet/rollout', {
+            method: 'POST',
+            body: data
+        });
+    }
+
+    async getRollouts(status) {
+        const query = status ? `?status=${status}` : '';
+        return this.request(`/servers/fleet/rollouts${query}`);
+    }
+
+    async getRollout(rolloutId) {
+        return this.request(`/servers/fleet/rollouts/${rolloutId}`);
+    }
+
+    async cancelRollout(rolloutId) {
+        return this.request(`/servers/fleet/rollouts/${rolloutId}/cancel`, {
+            method: 'POST'
+        });
+    }
+
+    async startDiscovery(duration = 10) {
+        return this.request(`/servers/fleet/discovery?duration=${duration}`, {
+            method: 'POST'
+        });
+    }
+
+    async getDiscoveredAgents() {
+        return this.request('/servers/fleet/discovery');
+    }
+
+    async approveRegistration(serverId) {
+        return this.request(`/servers/fleet/approve/${serverId}`, {
+            method: 'POST'
+        });
+    }
+
+    async rejectRegistration(serverId) {
+        return this.request(`/servers/fleet/reject/${serverId}`, {
+            method: 'POST'
+        });
+    }
+
+    async getQueuedCommands(serverId) {
+        const query = serverId ? `?server_id=${serverId}` : '';
+        return this.request(`/servers/fleet/commands/queued${query}`);
+    }
+
+    async retryCommand(commandId) {
+        return this.request(`/servers/fleet/commands/${commandId}/retry`, {
+            method: 'POST'
+        });
+    }
+
+    async getServerDiagnostics(serverId) {
+        return this.request(`/servers/fleet/diagnostics/${serverId}`);
+    }
+
     // ── Email Server ──
     async getEmailStatus() { return this.request('/email/status'); }
     async installEmailServer(data = {}) { return this.request('/email/install', { method: 'POST', body: JSON.stringify(data) }); }

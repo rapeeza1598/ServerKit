@@ -211,6 +211,14 @@ class AgentRegistry:
             )
             db.session.add(session)
             db.session.commit()
+
+            # Deliver any queued commands for this server
+            try:
+                from app.services.agent_fleet_service import fleet_service
+                fleet_service.deliver_queued_commands(server_id)
+            except Exception as e:
+                print(f"Error delivering queued commands: {e}")
+
         except Exception as e:
             print(f"Error registering agent: {e}")
             db.session.rollback()
@@ -272,21 +280,38 @@ class AgentRegistry:
 
     # ==================== Heartbeat ====================
 
-    def update_heartbeat(self, server_id: str, metrics: dict = None):
+    def update_heartbeat(self, server_id: str, metrics: dict = None, client_timestamp: int = None):
         """Update agent heartbeat and optionally store metrics"""
+        now = datetime.utcnow()
         with self._lock:
             agent = self._agents.get(server_id)
             if agent:
-                agent.last_heartbeat = datetime.utcnow()
+                agent.last_heartbeat = now
+
+        # Calculate heartbeat latency if client sent a timestamp
+        latency_ms = None
+        if client_timestamp:
+            now_ms = int(time.time() * 1000)
+            latency_ms = max(0, now_ms - client_timestamp)
 
         # Update server last_seen
         try:
             server = Server.query.get(server_id)
             if server:
-                server.last_seen = datetime.utcnow()
+                server.last_seen = now
                 if server.status != 'online':
                     server.status = 'online'
                 db.session.commit()
+
+            # Update session latency
+            if latency_ms is not None:
+                session = AgentSession.query.filter_by(
+                    server_id=server_id, is_active=True
+                ).first()
+                if session:
+                    session.last_heartbeat = now
+                    session.update_latency(latency_ms)
+                    db.session.commit()
 
             # Store metrics if provided
             if metrics:

@@ -93,3 +93,4 @@ new_templates/
 /logs/
 /tmp/
 nul
+SECURITY_AUDIT.md

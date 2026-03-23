@@ -9,7 +9,7 @@ from app.models.audit_log import AuditLog
 from app.models.metrics_history import MetricsHistory
 from app.models.workflow import Workflow, WorkflowExecution, WorkflowLog
 from app.models.webhook import GitWebhook, WebhookLog, GitDeployment
-from app.models.server import Server, ServerGroup, ServerMetrics, ServerCommand, AgentSession
+from app.models.server import Server, ServerGroup, ServerMetrics, ServerCommand, AgentSession, AgentVersion, AgentRollout
 from app.models.security_alert import SecurityAlert
 from app.models.wordpress_site import WordPressSite, DatabaseSnapshot, SyncJob
 from app.models.environment_activity import EnvironmentActivity
@@ -26,7 +26,7 @@ __all__ = [
     'User', 'Application', 'Domain', 'EnvironmentVariable', 'EnvironmentVariableHistory',
     'NotificationPreferences', 'Deployment', 'DeploymentDiff', 'SystemSettings', 'AuditLog',
     'MetricsHistory', 'Workflow', 'WorkflowExecution', 'WorkflowLog', 'GitWebhook', 'WebhookLog', 'GitDeployment',
-    'Server', 'ServerGroup', 'ServerMetrics', 'ServerCommand', 'AgentSession', 'SecurityAlert',
+    'Server', 'ServerGroup', 'ServerMetrics', 'ServerCommand', 'AgentSession', 'AgentVersion', 'AgentRollout', 'SecurityAlert',
     'WordPressSite', 'DatabaseSnapshot', 'SyncJob',
     'EnvironmentActivity', 'PromotionJob', 'SanitizationProfile',
     'EmailDomain', 'EmailAccount', 'EmailAlias', 'EmailForwardingRule', 'DNSProviderConfig',

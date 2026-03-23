@@ -63,6 +63,30 @@ func New(cfg *config.Config, log *logger.Logger, currentVersion string) *Updater
 	}
 }
 
+// UpdateTo performs an update to a specific version using provided URLs
+func (u *Updater) UpdateTo(ctx context.Context, version, downloadURL, checksumsURL string) error {
+	u.log.Info("Updating to specific version", "version", version)
+
+	info := &VersionInfo{
+		LatestVersion: version,
+		DownloadURL:   downloadURL,
+		ChecksumsURL:  checksumsURL,
+	}
+
+	// Download update
+	newBinaryPath, err := u.DownloadUpdate(ctx, info)
+	if err != nil {
+		return fmt.Errorf("failed to download update: %w", err)
+	}
+
+	// Install update
+	if err := u.InstallUpdate(newBinaryPath); err != nil {
+		return fmt.Errorf("failed to install update: %w", err)
+	}
+
+	return nil
+}
+
 // CheckForUpdate checks if a new version is available
 func (u *Updater) CheckForUpdate(ctx context.Context) (*VersionInfo, error) {
 	u.log.Debug("Checking for updates", "current_version", u.currentVersion)
