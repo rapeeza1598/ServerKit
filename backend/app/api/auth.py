@@ -312,6 +312,18 @@ def update_current_user():
             return jsonify({'error': 'Password must be at least 8 characters'}), 400
         user.set_password(data['password'])
 
+    if 'sidebar_config' in data:
+        config = data['sidebar_config']
+        if isinstance(config, dict):
+            preset = config.get('preset', 'full')
+            valid_presets = ['full', 'web', 'email', 'devops', 'minimal', 'custom']
+            if preset not in valid_presets:
+                return jsonify({'error': f'Invalid sidebar preset: {preset}'}), 400
+            hidden = config.get('hiddenItems', [])
+            if not isinstance(hidden, list):
+                return jsonify({'error': 'hiddenItems must be a list'}), 400
+            user.set_sidebar_config({'preset': preset, 'hiddenItems': hidden})
+
     db.session.commit()
 
     return jsonify({'user': user.to_dict()}), 200

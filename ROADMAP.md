@@ -4,15 +4,17 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Current Version: v1.5.0 (In Development)
+## Current Version: v1.6.0 (In Development)
 
-### Recently Completed (v1.4.0)
+### Recently Completed (v1.5.0)
 
+- **New UI & Services Page** - Integrated full Services page with detail views, metrics, logs, and shell.
+- **Environment Pipeline** - Multi-environment management for WordPress (Prod/Staging/Dev) with promotion/sync.
+- **Visual Infrastructure Designer** - Node-based visual canvas for stack deployment and server overview.
+- **Advanced Monitoring UI** - Real-time log streaming and terminal integration in the dashboard.
+- **Template Library Expansion** - Over 60+ one-click deployment templates (Immich, Authelia, Ghost, etc.).
 - **Team & Permissions** - RBAC with admin/developer/viewer roles, invitations, audit logging
-- **API Enhancements** - API keys, rate limiting, webhook subscriptions, OpenAPI docs, analytics
 - **SSO & OAuth Login** - Google, GitHub, OIDC, SAML with account linking
-- **Database Migrations** - Flask-Migrate/Alembic with versioned schema migrations
-- **Email Server Management** - Postfix, Dovecot, DKIM, SpamAssassin, Roundcube
 
 ---
 
@@ -178,7 +180,22 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Phase 14: Team & Permissions (Completed)
+## Phase 14: Visual Infrastructure Designer (Completed)
+
+**Priority: High**
+
+The visual canvas for designing and deploying entire infrastructure stacks.
+
+- [x] Node-based Visual Canvas (`WorkflowBuilder.jsx`) using React Flow
+- [x] Infrastructure component nodes (Docker, Database, Domain, Service)
+- [x] Smart connection rules (link apps to DBs, domains to apps)
+- [x] One-click stack deployment from the canvas
+- [x] Template-based stack generation
+- [x] Server overview mode (visualize existing infrastructure)
+
+---
+
+## Phase 15: Team & Permissions (Completed)
 
 **Priority: Medium**
 
@@ -191,7 +208,7 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Phase 15: API Enhancements (Completed)
+## Phase 16: API Enhancements (Completed)
 
 **Priority: Medium**
 
@@ -203,7 +220,7 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Phase 16: Advanced Security (Completed)
+## Phase 17: Advanced Security (Completed)
 
 **Priority: High**
 
@@ -219,7 +236,7 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Phase 17: SSO & OAuth Login (Completed)
+## Phase 18: SSO & OAuth Login (Completed)
 
 **Priority: High**
 
@@ -236,23 +253,48 @@ This document outlines the development roadmap for ServerKit. Features are organ
 
 ---
 
-## Phase 18: Database Migrations & Schema Versioning (Completed)
+## Phase 19: Database Migrations & Schema Versioning (Completed)
 
 **Priority: High**
 
-### Backend — Migration Engine
-- [x] Integrate Flask-Migrate (Alembic) for versioned schema migrations
-- [x] Generate initial migration from current model state as baseline
-- [x] Replace `_auto_migrate_columns()` hack with proper Alembic migrations
-- [x] Store schema version in a `schema_version` table (current version, history)
-- [x] API endpoints for migration status, apply, and rollback
-- [x] Auto-detect pending migrations on login and flag the session
-- [x] Pre-migration automatic DB backup before applying changes
-- [x] Migration scripts for all existing model changes (retroactive baseline)
+- [x] Flask-Migrate (Alembic) integration
+- [x] Migration wizard UI (Completed)
+- [x] CLI fallback support
 
-### CLI Fallback
-- [x] CLI commands for headless/SSH scenarios (`flask db upgrade`, `flask db status`)
-- [x] CLI rollback support (`flask db downgrade`)
+---
+
+## Phase 20: New UI & Services Page (Completed)
+
+**Priority: Critical**
+
+Integrated full Services page with detail views, metrics, logs, shell, settings, and package management.
+
+- [x] Services list page with status indicators and quick actions
+- [x] Service detail page with tabbed interface (Metrics, Logs, Shell, Settings, Commands, Events, Packages)
+- [x] Git connect modal for linking services to repositories
+- [x] Gunicorn management tab for Python services
+- [x] Service type detection and type-specific UI (Node, Python, PHP, Docker, etc.)
+
+---
+
+## Phase 21: Environment Pipeline (Completed)
+
+**Priority: High**
+
+- [x] WordPress multi-environment pipeline (Prod/Staging/Dev)
+- [x] Code and Database promotion between environments
+- [x] Production syncing and environment locking
+
+---
+
+## Phase 22: Container Logs & Monitoring UI (Completed)
+
+**Priority: High**
+
+- [x] Real-time log streaming via WebSocket with ANSI color support
+- [x] Web-based terminal (`Terminal.jsx`) with shell access
+- [x] Per-app resource usage charts (CPU, RAM)
+- [x] Log search and filtering
 
 ---
 
@@ -262,75 +304,35 @@ The phases below are ordered by priority. Higher phases ship first.
 
 ---
 
-## Phase 19: New UI & Services Page (Planned)
+## Phase 23: Advanced Workflow & Automation Engine (NEW)
 
 **Priority: Critical**
 
-Merge the `new-ui` branch — adds a full Services page with service detail views, metrics, logs, shell, settings, git connect, and package management.
+Moving beyond static design to dynamic, event-driven automation. This turns ServerKit into a powerful automation hub.
 
-- [ ] Merge `new-ui` branch into main development line
-- [ ] Services list page with status indicators and quick actions
-- [ ] Service detail page with tabbed interface (Metrics, Logs, Shell, Settings, Commands, Events, Packages)
-- [ ] Git connect modal for linking services to repositories
-- [ ] Gunicorn management tab for Python services
-- [ ] Service type detection and type-specific UI (Node, Python, PHP, Docker, etc.)
-- [ ] Resolve any conflicts with features added since branch diverged
+- [ ] **Event Triggers:** Run workflows on Git push, health check failure, high CPU usage, or Webhook receipt.
+- [ ] **Cron Integration:** Schedule workflows to run on recurring intervals (e.g., "Every Sunday at 2 AM, backup all DBs and rotate logs").
+- [ ] **Cross-Server Actions:** "When Server A's database is backed up, sync it to Server B and notify Discord."
+- [ ] **Logic Nodes:** If/Else conditions, loops, and custom Python/Shell script execution nodes.
+- [ ] **State Machine:** Track workflow execution history, retries on failure, and execution logs.
+- [ ] **Global Variables:** Pass data between workflow steps (e.g., take the output of a build step and pass it to a deployment step).
 
 ---
 
-## Phase 20: Customizable Sidebar & Dashboard Views (Planned)
+## Phase 24: Customizable Sidebar & Dashboard Views (Completed)
 
 **Priority: High**
 
 Let users personalize what they see. Not everyone runs email servers or manages Docker — the sidebar should adapt to each user's needs.
 
-- [ ] Sidebar configuration page in Settings
-- [ ] Preset view profiles: **Full** (default, all modules), **Web Hosting** (apps, domains, SSL, databases, files), **Email Admin** (email, DNS, security), **Docker/DevOps** (containers, deployments, git, monitoring), **Minimal** (apps, monitoring, backups only)
-- [ ] Custom view builder — toggle individual sidebar items on/off
-- [ ] Per-user preference storage (saved to user profile, synced across sessions)
-- [ ] Sidebar sections collapse/expand with memory
-- [ ] Quick-switch between saved view profiles
-- [ ] Admin can set default view for new users
-- [ ] Hide empty/unconfigured modules automatically (e.g., hide Email if no email domains exist)
+- [x] Sidebar configuration page in Settings
+- [x] Preset view profiles (Full, Web Hosting, Email Admin, Docker/DevOps, Minimal)
+- [x] Custom view builder — toggle individual sidebar items on/off
+- [x] Per-user preference storage (saved to user profile)
 
 ---
 
-## Phase 21: Migration Wizard Frontend UI (Planned)
-
-**Priority: High**
-
-The backend migration engine is complete — this adds the visual upgrade experience (Matomo-style).
-
-- [ ] Full-screen modal/wizard that appears when pending migrations are detected
-- [ ] Step 1: "Update Available" — show current version vs new version, changelog summary
-- [ ] Step 2: "Backup" — auto-backup the database, show progress, confirm success
-- [ ] Step 3: "Apply Migrations" — run migrations with real-time progress/log output
-- [ ] Step 4: "Done" — success confirmation with summary of changes applied
-- [ ] Error handling: if a migration fails, show the error and offer rollback option
-- [ ] Block access to the panel until migrations are applied
-- [ ] Migration history page in Settings showing all past migrations and timestamps
-
----
-
-## Phase 22: Container Logs & Monitoring UI (Planned)
-
-**Priority: High**
-
-The container logs API is already built. This phase adds the frontend and extends monitoring to per-app metrics.
-
-- [ ] Log viewer component with terminal-style display and ANSI color support
-- [ ] Real-time log streaming via WebSocket with auto-scroll (pause on user scroll)
-- [ ] Log search with regex support and match highlighting
-- [ ] Filter by log level (INFO, WARN, ERROR, DEBUG) and time range
-- [ ] Export filtered logs to file
-- [ ] Per-container resource collection (CPU %, memory, network I/O via Docker stats API)
-- [ ] Per-app resource usage charts (Recharts) with time range selector (1h, 6h, 24h, 7d)
-- [ ] Per-app alert rules (metric, operator, threshold, duration)
-- [ ] Alert notifications via existing channels (email, Discord, Telegram) with cooldown
-
----
-
-## Phase 23: Agent Fleet Management (Planned)
+## Phase 25: Agent Fleet Management (Planned)
 
 **Priority: High**
 
@@ -350,7 +352,7 @@ Level up agent management from "connect and monitor" to full fleet control.
 
 ---
 
-## Phase 24: Cross-Server Monitoring Dashboard (Planned)
+## Phase 26: Cross-Server Monitoring Dashboard (Planned)
 
 **Priority: High**
 
@@ -369,7 +371,7 @@ Fleet-wide visibility — see everything at a glance and catch problems early.
 
 ---
 
-## Phase 25: Agent Plugin System (Planned)
+## Phase 27: Agent Plugin System (Planned)
 
 **Priority: High**
 
@@ -389,22 +391,9 @@ Make the agent extensible — let users add custom capabilities without modifyin
 - [ ] Scheduled tasks — plugins can register periodic jobs (cron-like)
 - [ ] Event hooks — plugins can react to agent events (connect, disconnect, command, alert)
 
-### Panel Integration
-- [ ] Plugin management UI — install, configure, monitor plugins per server
-- [ ] Plugin marketplace / registry — browse and install community plugins
-- [ ] Plugin configuration editor — per-server plugin settings from the panel
-- [ ] Plugin logs and diagnostics — view plugin output and errors
-- [ ] Plugin metrics visualization — custom widgets for plugin-reported data
-
-### Developer Experience
-- [ ] Plugin SDK (Go module) — scaffolding, helpers, testing tools
-- [ ] Plugin template repository — quickstart for new plugin development
-- [ ] Local plugin development mode — hot-reload, debug logging
-- [ ] Plugin documentation and API reference
-
 ---
 
-## Phase 26: Server Templates & Config Sync (Planned)
+## Phase 28: Server Templates & Config Sync (Planned)
 
 **Priority: Medium**
 
@@ -423,7 +412,7 @@ Define what a server should look like, apply it, and detect when it drifts.
 
 ---
 
-## Phase 27: Multi-Tenancy & Workspaces (Planned)
+## Phase 29: Multi-Tenancy & Workspaces (Planned)
 
 **Priority: Medium**
 
@@ -442,7 +431,7 @@ Isolate servers by team, client, or project. Essential for agencies, MSPs, and l
 
 ---
 
-## Phase 28: Advanced SSL Features (Planned)
+## Phase 30: Advanced SSL Features (Planned)
 
 **Priority: Medium**
 
@@ -456,7 +445,7 @@ Isolate servers by team, client, or project. Essential for agencies, MSPs, and l
 
 ---
 
-## Phase 29: DNS Zone Management (Planned)
+## Phase 31: DNS Zone Management (Planned)
 
 **Priority: Medium**
 
@@ -473,7 +462,7 @@ Full DNS record management with provider API integration.
 
 ---
 
-## Phase 30: Nginx Advanced Configuration (Planned)
+## Phase 32: Nginx Advanced Configuration (Planned)
 
 **Priority: Medium**
 
@@ -491,7 +480,7 @@ Go beyond basic virtual hosts — full reverse proxy and performance configurati
 
 ---
 
-## Phase 31: Status Page & Health Checks (Planned)
+## Phase 33: Status Page & Health Checks (Planned)
 
 **Priority: Medium**
 
@@ -510,7 +499,7 @@ Public-facing status page and automated health monitoring.
 
 ---
 
-## Phase 32: Server Provisioning APIs (Planned)
+## Phase 34: Server Provisioning APIs (Planned)
 
 **Priority: Medium**
 
@@ -529,7 +518,7 @@ Spin up and manage cloud servers directly from the panel.
 
 ---
 
-## Phase 33: Performance Optimization (Planned)
+## Phase 35: Performance Optimization (Planned)
 
 **Priority: Low**
 
@@ -542,7 +531,7 @@ Spin up and manage cloud servers directly from the panel.
 
 ---
 
-## Phase 34: Mobile App (Future)
+## Phase 36: Mobile App (Future)
 
 **Priority: Low — v3.0+**
 
@@ -554,7 +543,7 @@ Spin up and manage cloud servers directly from the panel.
 
 ---
 
-## Phase 35: Marketplace & Extensions (Future)
+## Phase 37: Marketplace & Extensions (Future)
 
 **Priority: Low — v3.0+**
 
@@ -576,8 +565,8 @@ Spin up and manage cloud servers directly from the panel.
 | v1.2.0 | Backups, Advanced SSL, Advanced Security | Completed |
 | v1.3.0 | Email server, API enhancements | Completed |
 | v1.4.0 | Team & permissions, SSO & OAuth login | Completed |
-| v1.5.0 | New UI, customizable sidebar, migration wizard UI | Current |
-| v1.6.0 | Container monitoring UI, agent fleet management | Planned |
+| v1.5.0 | New UI, Visual Designer, Services Page | Current |
+| v1.6.0 | Advanced Automation Engine, fleet management | Planned |
 | v1.7.0 | Cross-server monitoring, agent plugin system | Planned |
 | v1.8.0 | Server templates, multi-tenancy | Planned |
 | v1.9.0 | Advanced SSL, DNS management, Nginx config | Planned |

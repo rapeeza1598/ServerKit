@@ -10,6 +10,7 @@ import ActivityTab from '../components/settings/ActivityTab';
 import SSOConfigTab from '../components/settings/SSOConfigTab';
 import MigrationHistoryTab from '../components/settings/MigrationHistoryTab';
 import ApiSettingsTab from '../components/settings/ApiSettingsTab';
+import SidebarSettings from '../components/settings/SidebarSettings';
 import SSOProviderIcon from '../components/SSOProviderIcon';
 import {
     Github, FileText, HelpCircle, MessageSquare, Bug, Check, Download, CheckCircle,
@@ -25,7 +26,7 @@ import {
 } from 'lucide-react';
 import ServerKitLogo from '../components/ServerKitLogo';
 
-const VALID_TABS = ['profile', 'security', 'appearance', 'notifications', 'system', 'users', 'audit', 'activity', 'site', 'sso', 'api', 'migrations', 'developer', 'about'];
+const VALID_TABS = ['profile', 'security', 'appearance', 'sidebar', 'notifications', 'system', 'users', 'audit', 'activity', 'site', 'sso', 'api', 'migrations', 'developer', 'about'];
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useTabParam('/settings', VALID_TABS);
@@ -87,6 +88,16 @@ const Settings = () => {
                             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                         </svg>
                         Appearance
+                    </button>
+                    <button
+                        className={`settings-nav-item ${activeTab === 'sidebar' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('sidebar')}
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="9" y1="3" x2="9" y2="21"/>
+                        </svg>
+                        Sidebar
                     </button>
                     <button
                         className={`settings-nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
@@ -210,6 +221,7 @@ const Settings = () => {
                     {activeTab === 'profile' && <ProfileSettings />}
                     {activeTab === 'security' && <SecuritySettings />}
                     {activeTab === 'appearance' && <AppearanceSettings />}
+                    {activeTab === 'sidebar' && <SidebarSettings />}
                     {activeTab === 'notifications' && <NotificationSettings />}
                     {activeTab === 'system' && <SystemInfo />}
                     {activeTab === 'users' && isAdmin && <UsersTab />}

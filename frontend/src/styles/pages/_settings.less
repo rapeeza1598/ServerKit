@@ -1495,3 +1495,197 @@
         gap: @space-2;
     }
 }
+
+// ============================================
+// SIDEBAR SETTINGS
+// ============================================
+
+.sidebar-settings {
+    display: flex;
+    flex-direction: column;
+    gap: @space-8;
+
+    .settings-section-desc {
+        color: @text-secondary;
+        font-size: @font-size-sm;
+        margin: 0;
+        line-height: @line-height-normal;
+    }
+
+    .settings-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: @space-1;
+
+        h3 { margin-bottom: 0; }
+    }
+}
+
+.sidebar-item-count {
+    font-size: @font-size-xs;
+    color: @text-tertiary;
+    background: @bg-secondary;
+    padding: @space-1 @space-2;
+    border-radius: @radius-full;
+    font-weight: @font-weight-medium;
+}
+
+// Preset cards
+.sidebar-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: @space-3;
+    margin-top: @space-2;
+}
+
+.sidebar-preset-card {
+    display: flex;
+    align-items: flex-start;
+    gap: @space-3;
+    padding: @space-4;
+    background: @bg-card;
+    border: 1px solid @border-subtle;
+    border-radius: @radius-lg;
+    cursor: pointer;
+    transition: all @transition-fast;
+    text-align: left;
+    width: 100%;
+    position: relative;
+
+    &:hover {
+        border-color: @border-hover;
+        background: @bg-hover;
+    }
+
+    &.active {
+        border-color: @accent-primary;
+        background: @bg-card;
+        box-shadow: 0 0 0 1px @accent-primary;
+    }
+
+    .preset-card-icon {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: @bg-secondary;
+        border-radius: @radius-md;
+        color: @text-secondary;
+
+        svg {
+            stroke-width: 1.5;
+        }
+    }
+
+    &.active .preset-card-icon {
+        background: fade(@accent-primary-raw, 15%);
+        color: @accent-primary;
+    }
+
+    .preset-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: @space-1;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .preset-card-label {
+        font-size: @font-size-sm;
+        font-weight: @font-weight-semibold;
+        color: @text-primary;
+    }
+
+    .preset-card-desc {
+        font-size: @font-size-xs;
+        color: @text-tertiary;
+        line-height: @line-height-normal;
+    }
+
+    .preset-card-check {
+        position: absolute;
+        top: @space-3;
+        right: @space-3;
+        color: @accent-primary;
+    }
+}
+
+// Items toggle list
+.sidebar-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: @space-5;
+    margin-top: @space-2;
+}
+
+.sidebar-items-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.sidebar-items-group-label {
+    font-size: @font-size-xs;
+    font-weight: @font-weight-semibold;
+    color: @text-tertiary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0 @space-2 0;
+    border-bottom: 1px solid @border-subtle;
+    margin-bottom: @space-1;
+}
+
+.sidebar-item-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: @space-3 @space-2;
+    border-radius: @radius-md;
+    cursor: pointer;
+    transition: all @transition-fast;
+
+    &:hover {
+        background: @bg-hover;
+    }
+
+    &.hidden-item {
+        .sidebar-item-toggle-info {
+            opacity: 0.5;
+        }
+    }
+}
+
+.sidebar-item-toggle-info {
+    display: flex;
+    align-items: center;
+    gap: @space-3;
+    transition: opacity @transition-fast;
+
+    span {
+        font-size: @font-size-sm;
+        color: @text-primary;
+        font-weight: @font-weight-medium;
+    }
+}
+
+.sidebar-item-toggle-icon {
+    width: 18px;
+    height: 18px;
+    stroke: @text-secondary;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+// Actions bar
+.sidebar-settings-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: @space-3;
+    padding-top: @space-5;
+    border-top: 1px solid @border-subtle;
+}

@@ -36,6 +36,9 @@ class User(db.Model):
     backup_codes = db.Column(db.Text, nullable=True)  # JSON array of hashed backup codes
     totp_confirmed_at = db.Column(db.DateTime, nullable=True)  # When 2FA was enabled
 
+    # Sidebar preferences: { preset: 'full'|'web'|'email'|'devops'|'minimal'|'custom', hiddenItems: [...] }
+    sidebar_config = db.Column(db.Text, nullable=True)
+
     # Relationships
     applications = db.relationship('Application', backref='owner', lazy='dynamic')
 
@@ -166,6 +169,19 @@ class User(db.Model):
         feature_perms = perms.get(feature, {})
         return feature_perms.get(level, False)
 
+    def get_sidebar_config(self):
+        """Return sidebar config dict, or default."""
+        if self.sidebar_config:
+            try:
+                return json.loads(self.sidebar_config)
+            except (json.JSONDecodeError, TypeError):
+                pass
+        return {'preset': 'full', 'hiddenItems': []}
+
+    def set_sidebar_config(self, config):
+        """Store sidebar config as JSON."""
+        self.sidebar_config = json.dumps(config) if config else None
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -177,6 +193,7 @@ class User(db.Model):
             'totp_enabled': self.totp_enabled,
             'auth_provider': self.auth_provider or 'local',
             'has_password': self.has_password,
+            'sidebar_config': self.get_sidebar_config(),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'last_login_at': self.last_login_at.isoformat() if self.last_login_at else None,

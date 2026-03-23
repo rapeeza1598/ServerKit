@@ -50,11 +50,13 @@ English | [Español](docs/README.es.md) | [中文版](docs/README.zh-CN.md) | [P
 
 **Node.js** — PM2-managed applications with log streaming
 
-**Docker** — Full container and Docker Compose management
+**Workflow Builder** — Node-based visual automation for server tasks, deployments, and CI/CD
 
-**Environment Variables** — Secure, encrypted per-app variable management
+**Environment Pipeline** — Multi-environment management for WordPress (Prod/Staging/Dev) with code/DB promotion
 
-**Git Deployment** — GitHub/GitLab webhooks, auto-deploy on push, branch selection, rollback, zero-downtime deployments
+**Docker** — Full container and Docker Compose management with real-time log streaming and terminal access
+
+**Marketplace** — Over 60+ one-click templates for popular apps (Immich, Ghost, Authelia, etc.)
 
 ### 🏗️ Infrastructure
 
