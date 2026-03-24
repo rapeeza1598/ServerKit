@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import ConfirmDialog from '../ConfirmDialog';
 import { useToast } from '../../contexts/ToastContext';
+import Modal from '../Modal';
 
 const Fail2banTab = () => {
     const [status, setStatus] = useState(null);
@@ -174,14 +175,7 @@ const Fail2banTab = () => {
                 </>
             )}
 
-            {showBanModal && (
-                <div className="modal-overlay" onClick={() => setShowBanModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Ban IP Address</h2>
-                            <button className="btn btn-icon" onClick={() => setShowBanModal(false)}>×</button>
-                        </div>
-                        <div className="modal-body">
+            <Modal open={showBanModal} onClose={() => setShowBanModal(false)} title="Ban IP Address">
                             <div className="form-group">
                                 <label>IP Address</label>
                                 <input
@@ -199,16 +193,13 @@ const Fail2banTab = () => {
                                     ))}
                                 </select>
                             </div>
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setShowBanModal(false)}>Cancel</button>
                             <button className="btn btn-danger" onClick={handleBan} disabled={actionLoading || !banIP.trim()}>
                                 {actionLoading ? 'Banning...' : 'Ban IP'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
 
             {confirmDialog && (
                 <ConfirmDialog

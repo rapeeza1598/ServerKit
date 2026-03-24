@@ -303,7 +303,7 @@ const Dashboard = () => {
                                     <span><RotateCcw size={14} /></span>
                                 </button>
 
-                                <h3 className="spec-panel-title" style={{ marginTop: '1.5rem' }}>Hardware Specs</h3>
+                                <h3 className="spec-panel-title mt-6">Hardware Specs</h3>
                                 <div className="spec-row">
                                     <span className="spec-label">Processor</span>
                                     <span className="spec-data">{systemInfo?.cpu?.model || 'N/A'}</span>
@@ -339,13 +339,13 @@ const Dashboard = () => {
                                     <tbody>
                                         {apps.length === 0 ? (
                                             <tr>
-                                                <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                                                <td colSpan="5" className="text-center text-gray-400">
                                                     No applications found
                                                 </td>
                                             </tr>
                                         ) : (
                                             apps.slice(0, 6).map(app => (
-                                                <tr key={app.id} onClick={() => navigate(`/apps/${app.id}`)} style={{ cursor: 'pointer' }}>
+                                                <tr key={app.id} onClick={() => navigate(`/apps/${app.id}`)} className="cursor-pointer">
                                                     <td>{app.id}</td>
                                                     <td>
                                                         <div className="app-name-cell">

@@ -111,9 +111,14 @@
     color: $text-secondary;
 }
 
-// Loading state
+// Loading state (full-page spinner)
 .loading {
     @include flex-center();
-    min-height: 100vh;
+    min-height: 60vh;
     color: $text-secondary;
+}
+
+// Route-level loading (within dashboard)
+.loading-state {
+    min-height: 40vh;
 }

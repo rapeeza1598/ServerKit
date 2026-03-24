@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const VALID_TABS = ['logs', 'journal', 'processes', 'services'];
 
@@ -76,6 +78,7 @@ const Terminal = () => {
 };
 
 const LogFilesTab = () => {
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [logFiles, setLogFiles] = useState([]);
     const [selectedLog, setSelectedLog] = useState(null);
     const [logContent, setLogContent] = useState('');
@@ -141,7 +144,8 @@ const LogFilesTab = () => {
 
     async function handleClearLog() {
         if (!selectedLog) return;
-        if (!confirm(`Clear ${selectedLog}? This cannot be undone.`)) return;
+        const confirmed = await confirm({ title: 'Clear Log', message: `Clear ${selectedLog}? This cannot be undone.` });
+        if (!confirmed) return;
 
         try {
             await api.clearLog(selectedLog);
@@ -310,6 +314,16 @@ const LogFilesTab = () => {
                     </div>
                 </div>
             </div>
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
@@ -460,6 +474,7 @@ const JournalTab = () => {
 
 const ProcessesTab = () => {
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [processes, setProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('cpu');
@@ -486,7 +501,8 @@ const ProcessesTab = () => {
         const confirmMsg = force
             ? `Force kill process ${pid}? This may cause data loss.`
             : `Kill process ${pid}?`;
-        if (!confirm(confirmMsg)) return;
+        const confirmed = await confirm({ title: force ? 'Force Kill Process' : 'Kill Process', message: confirmMsg, variant: force ? 'danger' : 'warning' });
+        if (!confirmed) return;
 
         try {
             await api.killProcess(pid, force);
@@ -688,6 +704,16 @@ const ProcessesTab = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };

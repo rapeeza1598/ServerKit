@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Clock, Layers, GitBranch, Loader } from 'lucide-react';
 import api from '../../services/api';
+import Modal from '../Modal';
 
 const WorkflowListModal = ({ onLoad, onClose }) => {
     const [workflows, setWorkflows] = useState([]);
@@ -65,15 +66,7 @@ const WorkflowListModal = ({ onLoad, onClose }) => {
     };
 
     return (
-        <div className="workflow-modal-overlay" onClick={onClose}>
-            <div className="workflow-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="workflow-modal-header">
-                    <h2>Load Workflow</h2>
-                    <button className="modal-close-btn" onClick={onClose}>
-                        <X size={20} />
-                    </button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Load Workflow" className="workflow-modal">
                 <div className="workflow-modal-content">
                     {loading ? (
                         <div className="workflow-list-loading">
@@ -138,8 +131,7 @@ const WorkflowListModal = ({ onLoad, onClose }) => {
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

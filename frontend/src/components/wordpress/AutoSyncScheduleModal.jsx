@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, RefreshCw } from 'lucide-react';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const SCHEDULE_PRESETS = [
     { label: 'Daily at 3 AM', value: '0 3 * * *' },
@@ -83,16 +84,7 @@ const AutoSyncScheduleModal = ({ environment, prodId, onClose, api }) => {
     const envName = environment?.name || 'Environment';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal auto-sync-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Clock size={18} />
-                        Auto-Sync Schedule
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Auto-Sync Schedule" className="auto-sync-modal">
                 {loading ? (
                     <div className="auto-sync-loading">
                         <Spinner size="sm" />
@@ -183,8 +175,7 @@ const AutoSyncScheduleModal = ({ environment, prodId, onClose, api }) => {
                         {saving ? <><Spinner size="sm" /> Saving...</> : 'Save Schedule'}
                     </button>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -1,113 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
-import SSOProviderIcon from '../SSOProviderIcon';
-
-const LinkedAccounts = () => {
-    const { ssoProviders } = useAuth();
-    const [identities, setIdentities] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [unlinking, setUnlinking] = useState(null);
-    const [linkingProvider, setLinkingProvider] = useState(null);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        loadIdentities();
-    }, []);
-
-    async function loadIdentities() {
-        try {
-            const data = await api.getSSOIdentities();
-            setIdentities(data.identities || []);
-        } catch (err) {
-            // SSO may not be configured; silently handle
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleUnlink(provider) {
-        setUnlinking(provider);
-        setError('');
-        try {
-            await api.unlinkSSOProvider(provider);
-            await loadIdentities();
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setUnlinking(null);
-        }
-    }
-
-    async function handleLink(provider) {
-        setLinkingProvider(provider);
-        setError('');
-        try {
-            const redirectUri = `${window.location.origin}/login/callback/${provider}`;
-            const { auth_url } = await api.startSSOAuth(provider, redirectUri);
-            window.location.href = auth_url;
-        } catch (err) {
-            setError(err.message);
-            setLinkingProvider(null);
-        }
-    }
-
-    // Only show if SSO is configured
-    if (loading || (!ssoProviders?.length && !identities.length)) {
-        return null;
-    }
-
-    const linkedProviderIds = identities.map(i => i.provider);
-    const availableToLink = (ssoProviders || []).filter(p => !linkedProviderIds.includes(p.id));
-
-    return (
-        <div className="settings-card">
-            <h3>Linked Accounts</h3>
-            <p className="text-secondary">Connect external identity providers to your account</p>
-
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            {identities.length > 0 && (
-                <div className="linked-accounts-list">
-                    {identities.map(identity => (
-                        <div key={identity.id} className="linked-account">
-                            <div className="linked-account__info">
-                                <SSOProviderIcon provider={identity.provider} />
-                                <div>
-                                    <span className="linked-account__provider">{identity.provider}</span>
-                                    <span className="linked-account__email">{identity.provider_email}</span>
-                                </div>
-                            </div>
-                            <button
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleUnlink(identity.provider)}
-                                disabled={unlinking === identity.provider}
-                            >
-                                {unlinking === identity.provider ? 'Unlinking...' : 'Unlink'}
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {availableToLink.length > 0 && (
-                <div className="linked-accounts-available">
-                    {availableToLink.map(p => (
-                        <button
-                            key={p.id}
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => handleLink(p.id)}
-                            disabled={linkingProvider === p.id}
-                        >
-                            <SSOProviderIcon provider={p.id} />
-                            {linkingProvider === p.id ? 'Redirecting...' : `Link ${p.name}`}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
 
 const ProfileTab = () => {
     const { user, updateUser } = useAuth();
@@ -198,8 +90,6 @@ const ProfileTab = () => {
                     </button>
                 </div>
             </form>
-
-            <LinkedAccounts />
         </div>
     );
 };

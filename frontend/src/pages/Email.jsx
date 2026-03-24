@@ -494,7 +494,7 @@ function Email() {
                     <h2>Email Server Not Installed</h2>
                     <p>Install Postfix, Dovecot, OpenDKIM, and SpamAssassin to enable email hosting.</p>
                     <div className="install-form">
-                        <div className="form-group" style={{ width: '100%' }}>
+                        <div className="form-group w-full">
                             <label>Hostname (e.g. mail.example.com)</label>
                             <input type="text" value={installHostname} onChange={e => setInstallHostname(e.target.value)} placeholder="mail.example.com" />
                         </div>
@@ -926,7 +926,7 @@ function Email() {
                                     ))}
                                 </div>
                             </div>
-                            <div className="email-logs" style={{ marginTop: '2rem' }}>
+                            <div className="email-logs mt-8">
                                 <div className="section-header">
                                     <h2>Mail Logs</h2>
                                     <div className="log-controls">

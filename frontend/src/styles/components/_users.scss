@@ -446,6 +446,15 @@
     color: $text-tertiary;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.settings-nav-spacer {
+    flex: 1;
+    min-height: $space-4;
 }
 
 // --------------------------------------------

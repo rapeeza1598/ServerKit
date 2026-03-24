@@ -204,7 +204,7 @@ const Workspaces = () => {
                                     <div key={m.id} className="member-row">
                                         <div>
                                             <strong>{m.username || m.email}</strong>
-                                            <span className="badge badge--outline" style={{ marginLeft: 8 }}>{m.role}</span>
+                                            <span className="badge badge--outline ml-2">{m.role}</span>
                                         </div>
                                         {m.role !== 'owner' && (
                                             <button className="btn btn--sm btn--danger" onClick={() => handleRemoveMember(m.id)}>Remove</button>

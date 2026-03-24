@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Copy, Check, AlertTriangle } from 'lucide-react';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const BasicAuthModal = ({ environment, prodId, onClose, api }) => {
     const [loading, setLoading] = useState(true);
@@ -64,16 +65,7 @@ const BasicAuthModal = ({ environment, prodId, onClose, api }) => {
     const envName = environment?.name || 'Environment';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal basic-auth-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Shield size={18} />
-                        Basic Auth
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Basic Auth" className="basic-auth-modal">
                 <div className="basic-auth-body">
                     <div className="basic-auth-env-name">{envName}</div>
 
@@ -155,8 +147,7 @@ const BasicAuthModal = ({ environment, prodId, onClose, api }) => {
                         Close
                     </button>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import Modal from '../Modal';
 
 const GitConnectModal = ({ appId, deployConfig, onClose, onSaved }) => {
     const toast = useToast();
@@ -72,13 +73,7 @@ const GitConnectModal = ({ appId, deployConfig, onClose, onSaved }) => {
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>{deployConfig ? 'Edit Repository' : 'Connect Repository'}</h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title={deployConfig ? 'Edit Repository' : 'Connect Repository'}>
                 <form className="git-connect-modal__form" onSubmit={handleSubmit}>
                     <div className="git-connect-modal__field">
                         <label>Repository URL</label>
@@ -159,8 +154,7 @@ const GitConnectModal = ({ appId, deployConfig, onClose, onSaved }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

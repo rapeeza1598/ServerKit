@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Clock, CheckCircle, XCircle, Loader2, List, FileText, RefreshCw, Activity } from 'lucide-react';
 import api from '../../services/api';
+import Modal from '../Modal';
 
 const WorkflowExecutionHistory = ({ workflowId, onClose }) => {
     const [executions, setExecutions] = useState([]);
@@ -53,27 +54,7 @@ const WorkflowExecutionHistory = ({ workflowId, onClose }) => {
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content max-w-4xl w-full h-[80vh] flex flex-col p-0 overflow-hidden">
-                <div className="modal-header p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800/50">
-                    <div className="flex items-center gap-2">
-                        <Activity size={20} className="text-blue-400" />
-                        <h2 className="text-lg font-semibold">Execution History</h2>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button 
-                            onClick={fetchExecutions}
-                            className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-white"
-                            title="Refresh"
-                        >
-                            <RefreshCw size={18} />
-                        </button>
-                        <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded transition-colors">
-                            <X size={20} />
-                        </button>
-                    </div>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Execution History" size="lg">
                 <div className="flex-1 flex overflow-hidden">
                     {/* Executions List */}
                     <div className="w-1/3 border-r border-gray-700 overflow-y-auto bg-gray-900/30">
@@ -166,8 +147,7 @@ const WorkflowExecutionHistory = ({ workflowId, onClose }) => {
                         )}
                     </div>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -3,11 +3,14 @@ import useTabParam from '../hooks/useTabParam';
 import { Upload, Download, Check, AlertTriangle, Clock, Database, Package, FolderArchive, HardDrive, Cloud, CloudOff, RefreshCw, Trash2, Plus, Settings, CheckCircle, XCircle, Server, FileArchive } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const VALID_TABS = ['backups', 'schedules', 'storage', 'settings'];
 
 const Backups = () => {
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [backups, setBackups] = useState([]);
     const [stats, setStats] = useState(null);
     const [schedules, setSchedules] = useState([]);
@@ -146,7 +149,8 @@ const Backups = () => {
     };
 
     const handleDeleteBackup = async (backupPath) => {
-        if (!window.confirm('Are you sure you want to delete this backup?')) return;
+        const confirmed = await confirm({ title: 'Delete Backup', message: 'Are you sure you want to delete this backup?' });
+        if (!confirmed) return;
         try {
             await api.deleteBackup(backupPath);
             toast.success('Backup deleted');
@@ -171,7 +175,8 @@ const Backups = () => {
 
     const handleRestore = async () => {
         if (!selectedBackup) return;
-        if (!window.confirm('Are you sure you want to restore this backup? This may overwrite existing data.')) return;
+        const restoreConfirmed = await confirm({ title: 'Restore Backup', message: 'Are you sure you want to restore this backup? This may overwrite existing data.', variant: 'warning' });
+        if (!restoreConfirmed) return;
 
         try {
             if (selectedBackup.type === 'application') {
@@ -222,7 +227,8 @@ const Backups = () => {
     };
 
     const handleRemoveSchedule = async (scheduleId) => {
-        if (!window.confirm('Are you sure you want to remove this schedule?')) return;
+        const confirmed = await confirm({ title: 'Remove Schedule', message: 'Are you sure you want to remove this schedule?' });
+        if (!confirmed) return;
         try {
             await api.removeBackupSchedule(scheduleId);
             toast.success('Schedule removed');
@@ -271,7 +277,8 @@ const Backups = () => {
     };
 
     const handleCleanup = async () => {
-        if (!window.confirm(`This will delete backups older than ${configForm.retention_days} days. Continue?`)) return;
+        const confirmed = await confirm({ title: 'Cleanup Backups', message: `This will delete backups older than ${configForm.retention_days} days. Continue?`, variant: 'warning' });
+        if (!confirmed) return;
         try {
             const result = await api.cleanupBackups(configForm.retention_days);
             toast.success(result.message);
@@ -1161,6 +1168,16 @@ const Backups = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };

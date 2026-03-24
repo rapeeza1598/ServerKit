@@ -595,6 +595,39 @@
     }
 }
 
+.view-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid $border-subtle;
+    background: transparent;
+    color: $text-tertiary;
+    font-size: 0.65rem;
+    font-weight: $font-weight-medium;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        border-color: $border-active;
+        color: $text-primary;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    &.active {
+        border-color: $accent-primary;
+        color: $accent-primary;
+        background: $accent-glow;
+    }
+}
+
 .context-menu-divider {
     height: 1px;
     background: $border-subtle;

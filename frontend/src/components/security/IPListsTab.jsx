@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import ConfirmDialog from '../ConfirmDialog';
 import { useToast } from '../../contexts/ToastContext';
+import Modal from '../Modal';
 
 const IPListsTab = () => {
     const [lists, setLists] = useState({ allowlist: [], blocklist: [] });
@@ -111,14 +112,7 @@ const IPListsTab = () => {
                 {renderList('Blocklist', 'blocklist', lists.blocklist, 'ip-blocked')}
             </div>
 
-            {showAddModal && (
-                <div className="modal-overlay" onClick={() => setShowAddModal(null)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Add to {showAddModal}</h2>
-                            <button className="btn btn-icon" onClick={() => setShowAddModal(null)}>×</button>
-                        </div>
-                        <div className="modal-body">
+            <Modal open={!!showAddModal} onClose={() => setShowAddModal(null)} title={`Add to ${showAddModal || ''}`}>
                             <div className="form-group">
                                 <label>IP Address or CIDR</label>
                                 <input
@@ -137,16 +131,13 @@ const IPListsTab = () => {
                                     placeholder="Office IP, VPN, etc."
                                 />
                             </div>
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setShowAddModal(null)}>Cancel</button>
                             <button className="btn btn-primary" onClick={handleAdd} disabled={actionLoading || !newIP.trim()}>
                                 {actionLoading ? 'Adding...' : 'Add'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
 
             {confirmDialog && (
                 <ConfirmDialog

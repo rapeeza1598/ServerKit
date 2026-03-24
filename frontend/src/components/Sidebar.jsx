@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { Star, Settings, LogOut, Sun, Moon, Monitor, ChevronRight, ChevronUp, Layers } from 'lucide-react';
+import { Star, Settings, LogOut, Sun, Moon, Monitor, ChevronRight, ChevronUp, Layers, Palette, PanelLeft, Check } from 'lucide-react';
 import { api } from '../services/api';
 import ServerKitLogo from './ServerKitLogo';
-import { SIDEBAR_CATEGORIES, CATEGORY_LABELS, getVisibleItems } from './sidebarItems';
+import { SIDEBAR_CATEGORIES, CATEGORY_LABELS, SIDEBAR_PRESETS, getVisibleItems } from './sidebarItems';
 
 const Sidebar = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const { theme, resolvedTheme, setTheme, whiteLabel } = useTheme();
     const navigate = useNavigate();
     const [starAnimating, setStarAnimating] = useState(false);
@@ -71,6 +71,16 @@ const Sidebar = () => {
     }, [whiteLabel.enabled]);
 
     const conditions = { wpInstalled };
+    const currentPreset = user?.sidebar_config?.preset || 'full';
+
+    const handlePresetSwitch = async (presetKey) => {
+        if (presetKey === currentPreset) return;
+        const config = { preset: presetKey, hiddenItems: [] };
+        try {
+            await api.updateCurrentUser({ sidebar_config: config });
+            await updateUser({ sidebar_config: config });
+        } catch {}
+    };
 
     const visibleItems = useMemo(
         () => getVisibleItems(user?.sidebar_config),
@@ -219,13 +229,45 @@ const Sidebar = () => {
                                 </button>
                             </div>
                         </div>
+                        <div className="context-menu-section">
+                            <div className="context-menu-label">Sidebar View</div>
+                            <div className="view-switcher">
+                                {Object.entries(SIDEBAR_PRESETS).map(([key, preset]) => (
+                                    <button
+                                        key={key}
+                                        className={`view-btn ${currentPreset === key ? 'active' : ''}`}
+                                        onClick={() => handlePresetSwitch(key)}
+                                        title={preset.description}
+                                    >
+                                        {preset.label}
+                                        {currentPreset === key && <Check size={10} />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                         <div className="context-menu-divider" />
+                        <button
+                            className="context-menu-item"
+                            onClick={() => { navigate('/settings/appearance'); setMenuOpen(false); }}
+                        >
+                            <Palette size={15} />
+                            Appearance
+                            <ChevronRight size={14} className="context-menu-arrow" />
+                        </button>
+                        <button
+                            className="context-menu-item"
+                            onClick={() => { navigate('/settings/sidebar'); setMenuOpen(false); }}
+                        >
+                            <PanelLeft size={15} />
+                            Customize Sidebar
+                            <ChevronRight size={14} className="context-menu-arrow" />
+                        </button>
                         <button
                             className="context-menu-item"
                             onClick={() => { navigate('/settings'); setMenuOpen(false); }}
                         >
                             <Settings size={15} />
-                            Settings
+                            All Settings
                             <ChevronRight size={14} className="context-menu-arrow" />
                         </button>
                         <div className="context-menu-divider" />

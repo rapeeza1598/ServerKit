@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, X, Container, Globe, Package, FileText, RefreshCw, Square, Play, Settings, Trash2, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const Applications = () => {
     const navigate = useNavigate();
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [apps, setApps] = useState([]);
     const [appStats, setAppStats] = useState({});
     const [loading, setLoading] = useState(true);
@@ -98,7 +101,8 @@ const Applications = () => {
                 await api.restartApp(appId);
                 toast.success('Application restarted');
             } else if (action === 'delete') {
-                if (!confirm('Delete this application? This action cannot be undone.')) return;
+                const deleteConfirmed = await confirm({ title: 'Delete Application', message: 'Delete this application? This action cannot be undone.' });
+                if (!deleteConfirmed) return;
                 await api.deleteApp(appId);
                 toast.success('Application deleted');
             }
@@ -218,7 +222,7 @@ const Applications = () => {
                                     <th>Status</th>
                                     <th>Domain</th>
                                     <th>Resources</th>
-                                    <th style={{ textAlign: 'right' }}>Actions</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -236,7 +240,7 @@ const Applications = () => {
                                             </td>
                                             <td>
                                                 <span className="docker-image-tag" style={{ borderLeft: `3px solid ${getStackColor(app.app_type)}` }}>
-                                                    {app.app_type === 'docker' && <Container size={12} style={{ marginRight: 4 }} />}
+                                                    {app.app_type === 'docker' && <Container size={12} className="mr-1" />}
                                                     {app.app_type.toUpperCase()}
                                                 </span>
                                             </td>
@@ -254,13 +258,13 @@ const Applications = () => {
                                                     {app.domains && app.domains.length > 0 ? (
                                                         app.domains.map((d, i) => (
                                                             <span key={i}>
-                                                                <Globe size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                                                <Globe size={12} className="mr-1 align-middle" />
                                                                 {d.name}
                                                                 {i < app.domains.length - 1 && <br />}
                                                             </span>
                                                         ))
                                                     ) : (
-                                                        <span style={{ color: 'var(--text-tertiary)' }}>-</span>
+                                                        <span className="text-gray-400">-</span>
                                                     )}
                                                 </span>
                                             </td>
@@ -324,6 +328,16 @@ const Applications = () => {
                     onClose={() => setSelectedApp(null)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
@@ -446,12 +460,11 @@ const AppLogsModal = ({ app, onClose }) => {
                 </div>
                 <div className="modal-body">
                     {app.app_type !== 'docker' && (
-                        <div style={{ marginBottom: '1rem' }}>
+                        <div className="mb-4">
                             <select
                                 value={logType}
                                 onChange={(e) => setLogType(e.target.value)}
-                                className="docker-search"
-                                style={{ width: 'auto' }}
+                                className="docker-search w-auto"
                             >
                                 <option value="access">Access Logs</option>
                                 <option value="error">Error Logs</option>

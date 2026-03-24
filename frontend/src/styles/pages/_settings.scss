@@ -511,6 +511,38 @@
     }
 }
 
+// Div-based toggle (used in SidebarSettings)
+// Mirrors the input-based .toggle-switch above but driven by .on class
+.toggle-switch:not(:has(input)) {
+    width: 44px;
+    height: 24px;
+    background: $border-active;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background $transition-fast;
+    flex-shrink: 0;
+
+    &.on {
+        background: $accent-primary;
+
+        .toggle-knob {
+            transform: translateX(20px);
+        }
+    }
+
+    .toggle-knob {
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        top: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: transform $transition-fast;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+}
+
 // Toggle Label (checkbox + text inline)
 .toggle-label {
     display: flex !important;

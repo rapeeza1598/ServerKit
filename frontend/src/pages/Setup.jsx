@@ -125,9 +125,8 @@ const Setup = () => {
 
                 {currentStep > 2 && (
                     <button
-                        className="btn-wizard-prev"
+                        className="btn-wizard-prev mb-4"
                         onClick={handleBack}
-                        style={{ marginBottom: 16 }}
                     >
                         <ArrowLeft size={16} />
                         Back

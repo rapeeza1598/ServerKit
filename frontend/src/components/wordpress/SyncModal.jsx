@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowDownLeft, Shield } from 'lucide-react';
 import wordpressApi from '../../services/wordpress';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const SyncModal = ({ environment, productionName, onClose, onSync }) => {
     const [syncType, setSyncType] = useState('database');
@@ -64,13 +65,7 @@ const SyncModal = ({ environment, productionName, onClose, onSync }) => {
     const envType = environment.environment_type || 'development';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Sync from Production</h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Sync from Production">
                 <form onSubmit={handleSubmit}>
                     <div className="sync-direction">
                         <div className="promote-env-pill production">
@@ -211,8 +206,7 @@ const SyncModal = ({ environment, productionName, onClose, onSync }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

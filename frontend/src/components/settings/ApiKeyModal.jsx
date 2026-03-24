@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Copy, Check, AlertTriangle } from 'lucide-react';
+import Modal from '../Modal';
 
 const SCOPE_OPTIONS = [
     { value: '*', label: 'Full Access' },
@@ -71,13 +72,7 @@ const ApiKeyModal = ({ onClose, onSubmit, createdKey }) => {
     // Show created key view
     if (createdKey) {
         return (
-            <div className="modal-overlay" onClick={onClose}>
-                <div className="modal api-key-modal" onClick={e => e.stopPropagation()}>
-                    <div className="modal-header">
-                        <h3>API Key Created</h3>
-                        <button className="modal-close" onClick={onClose}><X size={18} /></button>
-                    </div>
-                    <div className="modal-body">
+            <Modal open={true} onClose={onClose} title="API Key Created" className="api-key-modal">
                         <div className="api-key-modal__warning">
                             <AlertTriangle size={16} />
                             <span>Copy this key now. It will not be shown again.</span>
@@ -89,22 +84,15 @@ const ApiKeyModal = ({ onClose, onSubmit, createdKey }) => {
                                 {copied ? 'Copied' : 'Copy'}
                             </button>
                         </div>
-                    </div>
                     <div className="modal-footer">
                         <button className="btn btn-primary" onClick={onClose}>Done</button>
                     </div>
-                </div>
-            </div>
+            </Modal>
         );
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal api-key-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h3>Create API Key</h3>
-                    <button className="modal-close" onClick={onClose}><X size={18} /></button>
-                </div>
+        <Modal open={true} onClose={onClose} title="Create API Key" className="api-key-modal">
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
                         <div className="form-group">
@@ -171,8 +159,7 @@ const ApiKeyModal = ({ onClose, onSubmit, createdKey }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

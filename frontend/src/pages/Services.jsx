@@ -263,7 +263,7 @@ function ServiceTypeIcon({ type }) {
                 </svg>
             );
         case 'php':
-            return <span style={{ fontSize: '12px', fontWeight: 700 }}>PHP</span>;
+            return <span className="text-xs font-bold">PHP</span>;
         case 'static':
             return (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -278,7 +278,7 @@ function ServiceTypeIcon({ type }) {
                 </svg>
             );
         default:
-            return <span style={{ fontSize: '12px', fontWeight: 700 }}>{type?.charAt(0).toUpperCase()}</span>;
+            return <span className="text-xs font-bold">{type?.charAt(0).toUpperCase()}</span>;
     }
 }
 

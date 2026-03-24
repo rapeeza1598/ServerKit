@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import ConfirmDialog from '../ConfirmDialog';
 import { useToast } from '../../contexts/ToastContext';
+import Modal from '../Modal';
 
 const SSHKeysTab = () => {
     const [keys, setKeys] = useState([]);
@@ -117,14 +118,7 @@ const SSHKeysTab = () => {
                 </div>
             </div>
 
-            {showAddModal && (
-                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-                    <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Add SSH Public Key</h2>
-                            <button className="btn btn-icon" onClick={() => setShowAddModal(false)}>×</button>
-                        </div>
-                        <div className="modal-body">
+            <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Add SSH Public Key" size="lg">
                             <div className="form-group">
                                 <label>Public Key</label>
                                 <textarea
@@ -135,16 +129,13 @@ const SSHKeysTab = () => {
                                 />
                                 <p className="help-text">Paste your SSH public key (typically from ~/.ssh/id_rsa.pub or ~/.ssh/id_ed25519.pub)</p>
                             </div>
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                             <button className="btn btn-primary" onClick={handleAddKey} disabled={actionLoading || !newKey.trim()}>
                                 {actionLoading ? 'Adding...' : 'Add Key'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
 
             {confirmDialog && (
                 <ConfirmDialog

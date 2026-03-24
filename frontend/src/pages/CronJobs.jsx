@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const CronJobs = () => {
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [status, setStatus] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [presets, setPresets] = useState({});
@@ -105,7 +108,8 @@ const CronJobs = () => {
     };
 
     const handleDeleteJob = async (jobId) => {
-        if (!window.confirm('Are you sure you want to delete this cron job?')) return;
+        const confirmed = await confirm({ title: 'Delete Cron Job', message: 'Are you sure you want to delete this cron job?' });
+        if (!confirmed) return;
         try {
             await api.deleteCronJob(jobId);
             toast.success('Cron job deleted');
@@ -521,6 +525,16 @@ const CronJobs = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };

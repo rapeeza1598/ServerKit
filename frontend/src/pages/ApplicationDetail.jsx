@@ -4,6 +4,8 @@ import { GitBranch } from 'lucide-react';
 import api from '../services/api';
 import useTabParam from '../hooks/useTabParam';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import EnvironmentVariables from '../components/EnvironmentVariables';
 import PrivateURLSection from '../components/PrivateURLSection';
 import LinkedAppsSection from '../components/LinkedAppsSection';
@@ -83,7 +85,7 @@ const ApplicationDetail = () => {
                     </svg>
                 );
             default:
-                return <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{type.charAt(0).toUpperCase()}</span>;
+                return <span className="text-xl font-bold">{type.charAt(0).toUpperCase()}</span>;
         }
     }
 
@@ -270,6 +272,7 @@ const ApplicationDetail = () => {
 // Overview Tab with new grid layout
 const OverviewTab = ({ app, onUpdate }) => {
     const navigate = useNavigate();
+    const { confirm: confirmOverview, confirmState: confirmOverviewState, handleConfirm: handleOverviewConfirm, handleCancel: handleOverviewCancel } = useConfirm();
     const [status, setStatus] = useState(null);
     const [appStatus, setAppStatus] = useState(null);
     const [linkedApps, setLinkedApps] = useState([]);
@@ -332,7 +335,8 @@ const OverviewTab = ({ app, onUpdate }) => {
     }
 
     async function handleUnlink() {
-        if (!window.confirm('Are you sure you want to unlink these apps? Database credentials will remain unchanged.')) {
+        const confirmed = await confirmOverview({ title: 'Unlink Apps', message: 'Are you sure you want to unlink these apps? Database credentials will remain unchanged.', variant: 'warning' });
+        if (!confirmed) {
             return;
         }
         setLinkLoading(true);
@@ -533,6 +537,16 @@ const OverviewTab = ({ app, onUpdate }) => {
                     onLinked={handleLinked}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmOverviewState.isOpen}
+                title={confirmOverviewState.title}
+                message={confirmOverviewState.message}
+                confirmText={confirmOverviewState.confirmText}
+                cancelText={confirmOverviewState.cancelText}
+                variant={confirmOverviewState.variant}
+                onConfirm={handleOverviewConfirm}
+                onCancel={handleOverviewCancel}
+            />
         </div>
     );
 };
@@ -847,6 +861,7 @@ const CommandsTab = ({ appId, appType }) => {
 
 const BuildTab = ({ appId, appPath }) => {
     const toast = useToast();
+    const { confirm: confirmBuild, confirmState: confirmBuildState, handleConfirm: handleBuildConfirm, handleCancel: handleBuildCancel } = useConfirm();
     const [buildConfig, setBuildConfig] = useState(null);
     const [detection, setDetection] = useState(null);
     const [deployments, setDeployments] = useState([]);
@@ -965,10 +980,11 @@ const BuildTab = ({ appId, appPath }) => {
     }
 
     async function handleRollback(version = null) {
-        if (!confirm(version
+        const rollbackMsg = version
             ? `Rollback to version ${version}? This will replace the current deployment.`
-            : 'Rollback to previous deployment?'
-        )) return;
+            : 'Rollback to previous deployment?';
+        const confirmed = await confirmBuild({ title: 'Rollback', message: rollbackMsg, variant: 'warning' });
+        if (!confirmed) return;
 
         setDeploying(true);
         setError(null);
@@ -1182,6 +1198,16 @@ const BuildTab = ({ appId, appPath }) => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmBuildState.isOpen}
+                title={confirmBuildState.title}
+                message={confirmBuildState.message}
+                confirmText={confirmBuildState.confirmText}
+                cancelText={confirmBuildState.cancelText}
+                variant={confirmBuildState.variant}
+                onConfirm={handleBuildConfirm}
+                onCancel={handleBuildCancel}
+            />
         </div>
     );
 };
@@ -1254,6 +1280,7 @@ const LogsTab = ({ app }) => {
 
 const SettingsTab = ({ app, onUpdate }) => {
     const navigate = useNavigate();
+    const { confirm: confirmAppSettings, confirmState: confirmAppSettingsState, handleConfirm: handleAppSettingsConfirm, handleCancel: handleAppSettingsCancel } = useConfirm();
     const [deleting, setDeleting] = useState(false);
     const [environmentType, setEnvironmentType] = useState(app.environment_type || 'standalone');
     const [savingEnvironment, setSavingEnvironment] = useState(false);
@@ -1267,8 +1294,10 @@ const SettingsTab = ({ app, onUpdate }) => {
     };
 
     async function handleDelete() {
-        if (!confirm(`Delete ${app.name}? This action cannot be undone.`)) return;
-        if (!confirm('Are you sure? Type "delete" to confirm.')) return;
+        const firstConfirm = await confirmAppSettings({ title: 'Delete Application', message: `Delete ${app.name}? This action cannot be undone.` });
+        if (!firstConfirm) return;
+        const secondConfirm = await confirmAppSettings({ title: 'Confirm Deletion', message: 'Are you sure? This will permanently delete the application and all its data.' });
+        if (!secondConfirm) return;
 
         setDeleting(true);
         try {
@@ -1297,7 +1326,8 @@ const SettingsTab = ({ app, onUpdate }) => {
     }
 
     async function handleUnlink() {
-        if (!confirm(`Unlink ${app.name} from its linked application? Both apps will become standalone.`)) return;
+        const confirmed = await confirmAppSettings({ title: 'Unlink Application', message: `Unlink ${app.name} from its linked application? Both apps will become standalone.`, variant: 'warning' });
+        if (!confirmed) return;
 
         setUnlinking(true);
         try {
@@ -1379,12 +1409,23 @@ const SettingsTab = ({ app, onUpdate }) => {
                     {deleting ? 'Deleting...' : 'Delete Application'}
                 </button>
             </div>
+            <ConfirmDialog
+                isOpen={confirmAppSettingsState.isOpen}
+                title={confirmAppSettingsState.title}
+                message={confirmAppSettingsState.message}
+                confirmText={confirmAppSettingsState.confirmText}
+                cancelText={confirmAppSettingsState.cancelText}
+                variant={confirmAppSettingsState.variant}
+                onConfirm={handleAppSettingsConfirm}
+                onCancel={handleAppSettingsCancel}
+            />
         </div>
     );
 };
 
 const DeployTab = ({ appId, appPath }) => {
     const toast = useToast();
+    const { confirm: confirmDeploy, confirmState: confirmDeployState, handleConfirm: handleDeployConfirm, handleCancel: handleDeployCancel } = useConfirm();
     const [config, setConfig] = useState(null);
     const [gitStatus, setGitStatus] = useState(null);
     const [history, setHistory] = useState([]);
@@ -1459,7 +1500,8 @@ const DeployTab = ({ appId, appPath }) => {
     }
 
     async function handleRemoveDeployment() {
-        if (!confirm('Remove deployment configuration? This will not delete the repository files.')) return;
+        const confirmed = await confirmDeploy({ title: 'Remove Deployment', message: 'Remove deployment configuration? This will not delete the repository files.', variant: 'warning' });
+        if (!confirmed) return;
         try {
             await api.removeDeployment(appId);
             setConfig(null);
@@ -1686,6 +1728,16 @@ const DeployTab = ({ appId, appPath }) => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmDeployState.isOpen}
+                title={confirmDeployState.title}
+                message={confirmDeployState.message}
+                confirmText={confirmDeployState.confirmText}
+                cancelText={confirmDeployState.cancelText}
+                variant={confirmDeployState.variant}
+                onConfirm={handleDeployConfirm}
+                onCancel={handleDeployCancel}
+            />
         </div>
     );
 };
