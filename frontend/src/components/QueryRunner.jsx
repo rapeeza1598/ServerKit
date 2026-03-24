@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import Modal from './Modal';
 
 const HISTORY_KEY = 'serverkit_query_history';
 const MAX_HISTORY = 50;
@@ -247,35 +248,21 @@ const QueryRunner = ({ database, dbType, onClose }) => {
     const dbName = dbType === 'sqlite' ? database.name : database.name;
 
     return (
-        <div className="modal-overlay query-runner-overlay" onClick={onClose}>
-            <div className="query-runner-modal" onClick={e => e.stopPropagation()}>
-                <div className="query-runner-header">
-                    <div className="query-runner-title">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                        <span>Query Runner - {dbName}</span>
-                        <span className={`db-type-badge ${dbType}`}>
-                            {dbType === 'mysql' ? 'MySQL' : dbType === 'postgresql' ? 'PostgreSQL' : dbType === 'docker' ? 'Docker MySQL' : 'SQLite'}
-                        </span>
-                    </div>
-                    <div className="query-runner-actions">
-                        {isAdmin && (
-                            <label className="readonly-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={!readonly}
-                                    onChange={(e) => setReadonly(!e.target.checked)}
-                                />
-                                <span>Allow write queries</span>
-                            </label>
-                        )}
-                        <button className="btn btn-secondary btn-sm" onClick={() => setShowHistory(!showHistory)}>
-                            History
-                        </button>
-                        <button className="modal-close" onClick={onClose}>&times;</button>
-                    </div>
+        <Modal open={true} onClose={onClose} title={`Query Runner - ${dbName}`} className="query-runner-modal">
+                <div className="query-runner-actions-bar">
+                    {isAdmin && (
+                        <label className="readonly-toggle">
+                            <input
+                                type="checkbox"
+                                checked={!readonly}
+                                onChange={(e) => setReadonly(!e.target.checked)}
+                            />
+                            <span>Allow write queries</span>
+                        </label>
+                    )}
+                    <button className="btn btn-secondary btn-sm" onClick={() => setShowHistory(!showHistory)}>
+                        History
+                    </button>
                 </div>
 
                 <div className="query-runner-body">
@@ -465,8 +452,7 @@ const QueryRunner = ({ database, dbType, onClose }) => {
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
+        </Modal>
     );
 };
 

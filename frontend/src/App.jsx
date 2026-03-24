@@ -31,6 +31,8 @@ import Templates from './pages/Templates';
 import WorkflowBuilder from './pages/WorkflowBuilder';
 import Servers from './pages/Servers';
 import ServerDetail from './pages/ServerDetail';
+import AgentFleet from './pages/AgentFleet';
+import FleetMonitor from './pages/FleetMonitor';
 import Downloads from './pages/Downloads';
 import WordPress from './pages/WordPress';
 import WordPressDetail from './pages/WordPressDetail';
@@ -40,6 +42,13 @@ import SSLCertificates from './pages/SSLCertificates';
 import Email from './pages/Email';
 import SSOCallback from './pages/SSOCallback';
 import DatabaseMigration from './pages/DatabaseMigration';
+import AgentPlugins from './pages/AgentPlugins';
+import ServerTemplates from './pages/ServerTemplates';
+import Workspaces from './pages/Workspaces';
+import DNSZones from './pages/DNSZones';
+import StatusPages from './pages/StatusPages';
+import CloudProvision from './pages/CloudProvision';
+import Marketplace from './pages/Marketplace';
 
 // Page title mapping
 const PAGE_TITLES = {
@@ -70,6 +79,15 @@ const PAGE_TITLES = {
     '/terminal': 'Terminal',
     '/settings': 'Settings',
     '/migrate': 'Database Migration',
+    '/fleet': 'Agent Fleet',
+    '/fleet-monitor': 'Fleet Monitor',
+    '/agent-plugins': 'Agent Plugins',
+    '/server-templates': 'Server Templates',
+    '/workspaces': 'Workspaces',
+    '/dns': 'DNS Zones',
+    '/status-pages': 'Status Pages',
+    '/cloud': 'Cloud Provisioning',
+    '/marketplace': 'Marketplace',
 };
 
 function PageTitleUpdater() {
@@ -204,6 +222,15 @@ function AppRoutes() {
                 <Route path="servers" element={<Servers />} />
                 <Route path="servers/:id" element={<ServerDetail />} />
                 <Route path="servers/:id/:tab" element={<ServerDetail />} />
+                <Route path="fleet" element={<AgentFleet />} />
+                <Route path="fleet-monitor" element={<FleetMonitor />} />
+                <Route path="agent-plugins" element={<AgentPlugins />} />
+                <Route path="server-templates" element={<ServerTemplates />} />
+                <Route path="workspaces" element={<Workspaces />} />
+                <Route path="dns" element={<DNSZones />} />
+                <Route path="status-pages" element={<StatusPages />} />
+                <Route path="cloud" element={<CloudProvision />} />
+                <Route path="marketplace" element={<Marketplace />} />
                 <Route path="downloads" element={<Downloads />} />
                 <Route path="firewall" element={<Navigate to="/security/firewall" replace />} />
                 <Route path="git" element={<Git />} />

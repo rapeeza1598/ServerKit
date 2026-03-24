@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import Modal from './Modal';
 
 const EnvironmentVariables = ({ appId }) => {
     const toast = useToast();
@@ -429,14 +430,7 @@ const EnvironmentVariables = ({ appId }) => {
             )}
 
             {/* Import Modal */}
-            {showImportModal && (
-                <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Import Environment Variables</h2>
-                            <button className="modal-close" onClick={() => setShowImportModal(false)}>&times;</button>
-                        </div>
-                        <div className="modal-body">
+            <Modal open={showImportModal} onClose={() => setShowImportModal(false)} title="Import Environment Variables">
                             <p className="hint">Paste your .env file content below or upload a file.</p>
 
                             <div className="import-file-upload">
@@ -471,7 +465,6 @@ const EnvironmentVariables = ({ appId }) => {
                                 />
                                 <span>Overwrite existing variables with same keys</span>
                             </label>
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setShowImportModal(false)}>
                                 Cancel
@@ -480,19 +473,10 @@ const EnvironmentVariables = ({ appId }) => {
                                 {saving ? 'Importing...' : 'Import'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
 
             {/* History Modal */}
-            {showHistoryModal && (
-                <div className="modal-overlay" onClick={() => setShowHistoryModal(false)}>
-                    <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Change History</h2>
-                            <button className="modal-close" onClick={() => setShowHistoryModal(false)}>&times;</button>
-                        </div>
-                        <div className="modal-body">
+            <Modal open={showHistoryModal} onClose={() => setShowHistoryModal(false)} title="Change History" size="lg">
                             {history.length === 0 ? (
                                 <p className="hint">No changes recorded yet.</p>
                             ) : (
@@ -519,15 +503,12 @@ const EnvironmentVariables = ({ appId }) => {
                                     </tbody>
                                 </table>
                             )}
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setShowHistoryModal(false)}>
                                 Close
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
         </div>
     );
 };

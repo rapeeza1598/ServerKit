@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, createContext, useContext } fr
 import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 // Server context for Docker operations
 const ServerContext = createContext({ serverId: 'local', serverName: 'Local' });
@@ -354,9 +356,11 @@ const CreateVolumeButton = () => {
 const PruneButton = ({ onPruned }) => {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
 
     async function handlePrune() {
-        if (!confirm('Remove unused Docker resources? This will remove:\n- Stopped containers\n- Unused images\n- Unused networks')) return;
+        const confirmed = await confirm({ title: 'Docker Cleanup', message: 'Remove unused Docker resources? This will remove stopped containers, unused images, and unused networks.' });
+        if (!confirmed) return;
 
         setLoading(true);
         try {
@@ -371,9 +375,21 @@ const PruneButton = ({ onPruned }) => {
     }
 
     return (
-        <button className="btn btn-secondary btn-sm" onClick={handlePrune} disabled={loading}>
-            {loading ? 'Cleaning...' : 'Prune Unused'}
-        </button>
+        <>
+            <button className="btn btn-secondary btn-sm" onClick={handlePrune} disabled={loading}>
+                {loading ? 'Cleaning...' : 'Prune Unused'}
+            </button>
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
+        </>
     );
 };
 
@@ -455,6 +471,7 @@ const TrashIcon = () => (
 const ContainersTab = ({ onStatsChange }) => {
     const toast = useToast();
     const { serverId, isRemote } = useServer();
+    const { confirm: confirmContainer, confirmState: confirmContainerState, handleConfirm: handleContainerConfirm, handleCancel: handleContainerCancel } = useConfirm();
     const [containers, setContainers] = useState([]);
     const [containerStats, setContainerStats] = useState({});
     const [loading, setLoading] = useState(true);
@@ -534,7 +551,8 @@ const ContainersTab = ({ onStatsChange }) => {
                 }
                 toast.success('Container restarted');
             } else if (action === 'remove') {
-                if (!confirm('Remove this container?')) return;
+                const removeConfirmed = await confirmContainer({ title: 'Remove Container', message: 'Remove this container?' });
+                if (!removeConfirmed) return;
                 if (isRemote) {
                     await api.removeRemoteContainer(serverId, containerId, true);
                 } else {
@@ -617,7 +635,7 @@ const ContainersTab = ({ onStatsChange }) => {
                             <th>Status</th>
                             <th>Bindings</th>
                             <th>Resources</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -711,6 +729,16 @@ const ContainersTab = ({ onStatsChange }) => {
                     onClose={() => setExecContainer(null)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmContainerState.isOpen}
+                title={confirmContainerState.title}
+                message={confirmContainerState.message}
+                confirmText={confirmContainerState.confirmText}
+                cancelText={confirmContainerState.cancelText}
+                variant={confirmContainerState.variant}
+                onConfirm={handleContainerConfirm}
+                onCancel={handleContainerCancel}
+            />
         </div>
     );
 };
@@ -719,6 +747,7 @@ const ContainersTab = ({ onStatsChange }) => {
 const ImagesTab = ({ onStatsChange }) => {
     const toast = useToast();
     const { serverId, isRemote } = useServer();
+    const { confirm: confirmImage, confirmState: confirmImageState, handleConfirm: handleImageConfirm, handleCancel: handleImageCancel } = useConfirm();
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -746,7 +775,8 @@ const ImagesTab = ({ onStatsChange }) => {
     }
 
     async function handleRemove(imageId) {
-        if (!confirm('Remove this image?')) return;
+        const confirmed = await confirmImage({ title: 'Remove Image', message: 'Remove this image?' });
+        if (!confirmed) return;
 
         try {
             if (isRemote) {
@@ -802,7 +832,7 @@ const ImagesTab = ({ onStatsChange }) => {
                             <th>Image ID</th>
                             <th>Size</th>
                             <th>Created</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -829,6 +859,16 @@ const ImagesTab = ({ onStatsChange }) => {
                     </tbody>
                 </table>
             )}
+            <ConfirmDialog
+                isOpen={confirmImageState.isOpen}
+                title={confirmImageState.title}
+                message={confirmImageState.message}
+                confirmText={confirmImageState.confirmText}
+                cancelText={confirmImageState.cancelText}
+                variant={confirmImageState.variant}
+                onConfirm={handleImageConfirm}
+                onCancel={handleImageCancel}
+            />
         </div>
     );
 };
@@ -837,6 +877,7 @@ const ImagesTab = ({ onStatsChange }) => {
 const NetworksTab = ({ onStatsChange }) => {
     const toast = useToast();
     const { serverId, isRemote } = useServer();
+    const { confirm: confirmNetwork, confirmState: confirmNetworkState, handleConfirm: handleNetworkConfirm, handleCancel: handleNetworkCancel } = useConfirm();
     const [networks, setNetworks] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -863,7 +904,8 @@ const NetworksTab = ({ onStatsChange }) => {
     }
 
     async function handleRemove(networkId) {
-        if (!confirm('Remove this network?')) return;
+        const confirmed = await confirmNetwork({ title: 'Remove Network', message: 'Remove this network?' });
+        if (!confirmed) return;
 
         try {
             await api.removeNetwork(networkId);
@@ -897,7 +939,7 @@ const NetworksTab = ({ onStatsChange }) => {
                             <th>Network ID</th>
                             <th>Driver</th>
                             <th>Scope</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -923,6 +965,16 @@ const NetworksTab = ({ onStatsChange }) => {
                     </tbody>
                 </table>
             )}
+            <ConfirmDialog
+                isOpen={confirmNetworkState.isOpen}
+                title={confirmNetworkState.title}
+                message={confirmNetworkState.message}
+                confirmText={confirmNetworkState.confirmText}
+                cancelText={confirmNetworkState.cancelText}
+                variant={confirmNetworkState.variant}
+                onConfirm={handleNetworkConfirm}
+                onCancel={handleNetworkCancel}
+            />
         </div>
     );
 };
@@ -931,6 +983,7 @@ const NetworksTab = ({ onStatsChange }) => {
 const VolumesTab = ({ onStatsChange }) => {
     const toast = useToast();
     const { serverId, isRemote } = useServer();
+    const { confirm: confirmVolume, confirmState: confirmVolumeState, handleConfirm: handleVolumeConfirm, handleCancel: handleVolumeCancel } = useConfirm();
     const [volumes, setVolumes] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -957,7 +1010,8 @@ const VolumesTab = ({ onStatsChange }) => {
     }
 
     async function handleRemove(volumeName) {
-        if (!confirm('Remove this volume? All data will be lost.')) return;
+        const confirmed = await confirmVolume({ title: 'Remove Volume', message: 'Remove this volume? All data will be lost.' });
+        if (!confirmed) return;
 
         try {
             await api.removeVolume(volumeName, true);
@@ -988,7 +1042,7 @@ const VolumesTab = ({ onStatsChange }) => {
                             <th>Name</th>
                             <th>Driver</th>
                             <th>Mountpoint</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -999,7 +1053,7 @@ const VolumesTab = ({ onStatsChange }) => {
                                 </td>
                                 <td>{volume.driver}</td>
                                 <td>
-                                    <span className="docker-container-id" style={{ maxWidth: '300px', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <span className="docker-container-id truncate inline-block" style={{ maxWidth: '300px' }}>
                                         {volume.mountpoint || '-'}
                                     </span>
                                 </td>
@@ -1013,6 +1067,16 @@ const VolumesTab = ({ onStatsChange }) => {
                     </tbody>
                 </table>
             )}
+            <ConfirmDialog
+                isOpen={confirmVolumeState.isOpen}
+                title={confirmVolumeState.title}
+                message={confirmVolumeState.message}
+                confirmText={confirmVolumeState.confirmText}
+                cancelText={confirmVolumeState.cancelText}
+                variant={confirmVolumeState.variant}
+                onConfirm={handleVolumeConfirm}
+                onCancel={handleVolumeCancel}
+            />
         </div>
     );
 };
@@ -1021,6 +1085,7 @@ const VolumesTab = ({ onStatsChange }) => {
 const ComposeTab = ({ onStatsChange }) => {
     const toast = useToast();
     const { serverId, isRemote } = useServer();
+    const { confirm: confirmCompose, confirmState: confirmComposeState, handleConfirm: handleComposeConfirm, handleCancel: handleComposeCancel } = useConfirm();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProject, setSelectedProject] = useState(null);
@@ -1068,7 +1133,8 @@ const ComposeTab = ({ onStatsChange }) => {
                 }
                 toast.success('Project started');
             } else if (action === 'down') {
-                if (!confirm('Stop this compose project? Containers will be removed.')) {
+                const downConfirmed = await confirmCompose({ title: 'Stop Compose Project', message: 'Stop this compose project? Containers will be removed.' });
+                if (!downConfirmed) {
                     setActionLoading(prev => ({ ...prev, [project.Name || project.name]: false }));
                     return;
                 }
@@ -1146,7 +1212,7 @@ const ComposeTab = ({ onStatsChange }) => {
                             <th>Project</th>
                             <th>Status</th>
                             <th>Config File</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th className="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1171,7 +1237,7 @@ const ComposeTab = ({ onStatsChange }) => {
                                         <div className="docker-status-detail">{status}</div>
                                     </td>
                                     <td>
-                                        <span className="docker-container-id" style={{ maxWidth: '300px', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <span className="docker-container-id truncate inline-block" style={{ maxWidth: '300px' }}>
                                             {configFiles}
                                         </span>
                                     </td>
@@ -1232,6 +1298,16 @@ const ComposeTab = ({ onStatsChange }) => {
                     onClose={() => setLogsProject(null)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmComposeState.isOpen}
+                title={confirmComposeState.title}
+                message={confirmComposeState.message}
+                confirmText={confirmComposeState.confirmText}
+                cancelText={confirmComposeState.cancelText}
+                variant={confirmComposeState.variant}
+                onConfirm={handleComposeConfirm}
+                onCancel={handleComposeCancel}
+            />
         </div>
     );
 };
@@ -1309,12 +1385,12 @@ const ComposeLogsModal = ({ project, onClose }) => {
                     <button className="modal-close" onClick={onClose}>&times;</button>
                 </div>
                 <div className="modal-body">
-                    <div className="logs-controls" style={{ marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="logs-controls flex flex-wrap items-center gap-2 mb-2">
                         <label>Service:</label>
                         <select
                             value={selectedService}
                             onChange={(e) => setSelectedService(e.target.value)}
-                            style={{ padding: '4px 8px' }}
+                            className="py-2 px-2"
                         >
                             <option value="">All Services</option>
                             {services.map(service => (
@@ -1322,7 +1398,7 @@ const ComposeLogsModal = ({ project, onClose }) => {
                             ))}
                         </select>
                         <label>Lines:</label>
-                        <select value={tail} onChange={(e) => setTail(Number(e.target.value))} style={{ padding: '4px 8px' }}>
+                        <select value={tail} onChange={(e) => setTail(Number(e.target.value))} className="py-2 px-2">
                             <option value={50}>50</option>
                             <option value={100}>100</option>
                             <option value={200}>200</option>
@@ -1505,9 +1581,9 @@ const ContainerLogsModal = ({ container, onClose }) => {
                     <button className="modal-close" onClick={onClose}>&times;</button>
                 </div>
                 <div className="modal-body">
-                    <div className="logs-controls" style={{ marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div className="logs-controls flex items-center gap-2 mb-2">
                         <label>Lines:</label>
-                        <select value={tail} onChange={(e) => setTail(Number(e.target.value))} style={{ padding: '4px 8px' }}>
+                        <select value={tail} onChange={(e) => setTail(Number(e.target.value))} className="py-2 px-2">
                             <option value={50}>50</option>
                             <option value={100}>100</option>
                             <option value={200}>200</option>

@@ -1,8 +1,12 @@
+import logging
 import subprocess
 import json
 import os
+import shlex
 import yaml
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 class DockerService:
@@ -23,8 +27,8 @@ class DockerService:
             if result.returncode == 0:
                 cls._compose_cmd = ['docker', 'compose']
                 return cls._compose_cmd
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(f"Failed to detect docker compose v2: {e}")
         # Fallback to docker-compose (v1)
         cls._compose_cmd = ['docker-compose']
         return cls._compose_cmd
@@ -56,7 +60,8 @@ class DockerService:
             if result.returncode == 0:
                 return json.loads(result.stdout)
             return None
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to get Docker info: {e}")
             return None
 
     # ==================== CONTAINER MANAGEMENT ====================
@@ -89,6 +94,7 @@ class DockerService:
                     })
             return containers
         except Exception as e:
+            logger.error(f"Failed to list containers: {e}")
             return []
 
     @staticmethod
@@ -104,7 +110,8 @@ class DockerService:
                 if data:
                     return data[0]
             return None
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to inspect container {container_id}: {e}")
             return None
 
     @staticmethod
@@ -138,7 +145,7 @@ class DockerService:
             cmd.append(image)
 
             if command:
-                cmd.extend(command.split())
+                cmd.extend(shlex.split(command))
 
             result = subprocess.run(cmd, capture_output=True, text=True)
 
@@ -183,7 +190,7 @@ class DockerService:
             cmd.append(image)
 
             if command:
-                cmd.extend(command.split())
+                cmd.extend(shlex.split(command))
 
             result = subprocess.run(cmd, capture_output=True, text=True)
 
@@ -217,6 +224,13 @@ class DockerService:
                 capture_output=True, text=True
             )
             if result.returncode == 0:
+                try:
+                    from app.services.workflow_engine import WorkflowEventBus
+                    WorkflowEventBus.emit('app_stopped', {
+                        'container_id': container_id
+                    })
+                except Exception as e:
+                    logger.error(f"Failed to emit app_stopped event: {e}")
                 return {'success': True}
             return {'success': False, 'error': result.stderr}
         except Exception as e:
@@ -305,7 +319,8 @@ class DockerService:
                 bufsize=1
             )
             return process
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to start log stream for container {container_id}: {e}")
             return None
 
     @staticmethod
@@ -470,7 +485,8 @@ class DockerService:
             if result.returncode == 0 and result.stdout.strip():
                 return json.loads(result.stdout.strip())
             return None
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to get stats for container {container_id}: {e}")
             return None
 
     @staticmethod
@@ -483,7 +499,7 @@ class DockerService:
             if tty:
                 cmd.append('-t')
             cmd.append(container_id)
-            cmd.extend(command.split())
+            cmd.extend(shlex.split(command))
 
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             return {
@@ -522,7 +538,8 @@ class DockerService:
                         'created': image.get('CreatedAt'),
                     })
             return images
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to list images: {e}")
             return []
 
     @staticmethod
@@ -612,7 +629,8 @@ class DockerService:
                         'scope': network.get('Scope'),
                     })
             return networks
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to list networks: {e}")
             return []
 
     @staticmethod
@@ -666,7 +684,8 @@ class DockerService:
                         'mountpoint': volume.get('Mountpoint'),
                     })
             return volumes
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to list volumes: {e}")
             return []
 
     @staticmethod
@@ -779,7 +798,8 @@ class DockerService:
                         continue
                 return containers
             return []
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to list compose services: {e}")
             return []
 
     @classmethod
@@ -899,7 +919,8 @@ class DockerService:
                 if line:
                     usage.append(json.loads(line))
             return usage
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to get Docker disk usage: {e}")
             return []
 
     @staticmethod

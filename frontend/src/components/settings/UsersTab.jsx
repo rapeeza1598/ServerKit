@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import UserModal from './UserModal';
 import InvitationsTab from './InvitationsTab';
+import Modal from '../Modal';
 
 const UsersTab = () => {
     const [users, setUsers] = useState([]);
@@ -227,21 +228,9 @@ const UsersTab = () => {
             )}
 
             {deleteConfirm && (
-                <div className="modal-overlay">
-                    <div className="modal modal-sm">
-                        <div className="modal-header">
-                            <h3>Delete User</h3>
-                            <button className="modal-close" onClick={() => setDeleteConfirm(null)}>
-                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="modal-body">
+                <Modal open={true} onClose={() => setDeleteConfirm(null)} title="Delete User" size="sm">
                             <p>Are you sure you want to delete <strong>{deleteConfirm.username}</strong>?</p>
                             <p className="text-muted">This action cannot be undone.</p>
-                        </div>
                         <div className="modal-footer">
                             <button className="btn btn-ghost" onClick={() => setDeleteConfirm(null)}>
                                 Cancel
@@ -250,8 +239,7 @@ const UsersTab = () => {
                                 Delete User
                             </button>
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
 
             <InvitationsTab />

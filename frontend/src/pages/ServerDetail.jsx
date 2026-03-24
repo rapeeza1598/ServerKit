@@ -3,10 +3,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import MetricsGraph from '../components/MetricsGraph';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const ServerDetail = () => {
     const { id, tab } = useParams();
     const navigate = useNavigate();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [server, setServer] = useState(null);
     const [metrics, setMetrics] = useState(null);
     const [systemInfo, setSystemInfo] = useState(null);
@@ -68,7 +71,8 @@ const ServerDetail = () => {
     }, [server, loadMetrics, loadSystemInfo]);
 
     async function handleDeleteServer() {
-        if (!confirm('Are you sure you want to remove this server? This action cannot be undone.')) return;
+        const confirmed = await confirm({ title: 'Remove Server', message: 'Are you sure you want to remove this server? This action cannot be undone.' });
+        if (!confirmed) return;
 
         try {
             await api.deleteServer(id);
@@ -94,7 +98,8 @@ const ServerDetail = () => {
     }
 
     async function handleRegenerateToken() {
-        if (!confirm('Generate a new registration token? The old token will be invalidated.')) return;
+        const tokenConfirmed = await confirm({ title: 'Regenerate Token', message: 'Generate a new registration token? The old token will be invalidated.', variant: 'warning' });
+        if (!tokenConfirmed) return;
 
         try {
             const result = await api.generateRegistrationToken(id);
@@ -235,6 +240,16 @@ const ServerDetail = () => {
                     onClose={() => setShowTokenModal(false)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
@@ -397,6 +412,7 @@ const DockerTab = ({ serverId, serverStatus }) => {
     const [loading, setLoading] = useState(true);
     const [subTab, setSubTab] = useState('containers');
     const toast = useToast();
+    const { confirm: confirmDocker, confirmState: confirmDockerState, handleConfirm: handleDockerConfirm, handleCancel: handleDockerCancel } = useConfirm();
 
     useEffect(() => {
         if (serverStatus === 'online') {
@@ -436,7 +452,8 @@ const DockerTab = ({ serverId, serverStatus }) => {
                 result = await api.restartRemoteContainer(serverId, containerId);
                 toast.success('Container restarted');
             } else if (action === 'remove') {
-                if (!confirm('Remove this container?')) return;
+                const removeConfirmed = await confirmDocker({ title: 'Remove Container', message: 'Remove this container?' });
+                if (!removeConfirmed) return;
                 result = await api.removeRemoteContainer(serverId, containerId, true);
                 toast.success('Container removed');
             }
@@ -584,6 +601,16 @@ const DockerTab = ({ serverId, serverStatus }) => {
                     )}
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmDockerState.isOpen}
+                title={confirmDockerState.title}
+                message={confirmDockerState.message}
+                confirmText={confirmDockerState.confirmText}
+                cancelText={confirmDockerState.cancelText}
+                variant={confirmDockerState.variant}
+                onConfirm={handleDockerConfirm}
+                onCancel={handleDockerCancel}
+            />
         </div>
     );
 };
@@ -714,6 +741,7 @@ Install-ServerKitAgent -Server "${window.location.origin}" -Token "${token}"` : 
 };
 
 const SettingsTab = ({ server, onUpdate, onRegenerateToken, onDelete }) => {
+    const { confirm: confirmSettings, confirmState: confirmSettingsState, handleConfirm: handleSettingsConfirm, handleCancel: handleSettingsCancel } = useConfirm();
     const [formData, setFormData] = useState({
         name: server.name || '',
         description: server.description || '',
@@ -784,7 +812,8 @@ const SettingsTab = ({ server, onUpdate, onRegenerateToken, onDelete }) => {
     }
 
     async function handleRotateKey() {
-        if (!confirm('Rotate API credentials? The agent must be online to receive new credentials.')) return;
+        const confirmed = await confirmSettings({ title: 'Rotate Credentials', message: 'Rotate API credentials? The agent must be online to receive new credentials.', variant: 'warning' });
+        if (!confirmed) return;
         setRotatingKey(true);
         try {
             const result = await api.rotateAPIKey(server.id);
@@ -1055,6 +1084,16 @@ const SettingsTab = ({ server, onUpdate, onRegenerateToken, onDelete }) => {
                     <TrashIcon /> Remove Server
                 </button>
             </div>
+            <ConfirmDialog
+                isOpen={confirmSettingsState.isOpen}
+                title={confirmSettingsState.title}
+                message={confirmSettingsState.message}
+                confirmText={confirmSettingsState.confirmText}
+                cancelText={confirmSettingsState.cancelText}
+                variant={confirmSettingsState.variant}
+                onConfirm={handleSettingsConfirm}
+                onCancel={handleSettingsCancel}
+            />
         </div>
     );
 };

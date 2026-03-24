@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 import psutil
 import smtplib
 from email.mime.text import MIMEText
@@ -9,6 +10,8 @@ from typing import Dict, List, Optional
 from pathlib import Path
 import threading
 import time
+
+logger = logging.getLogger(__name__)
 
 from .notification_service import NotificationService
 from app import paths
@@ -279,6 +282,25 @@ class MonitoringService:
 
         # Send to all configured notification channels (Discord, Slack, Telegram, etc.)
         NotificationService.send_all(alerts_to_send)
+
+        # Emit events for workflow triggers
+        try:
+            from app.services.workflow_engine import WorkflowEventBus
+            for alert in alerts_to_send:
+                if alert['type'] == 'cpu':
+                    WorkflowEventBus.emit('high_cpu', {
+                        'percent': alert.get('value'),
+                        'threshold': alert.get('threshold'),
+                        'severity': alert.get('severity')
+                    })
+                elif alert['type'] == 'memory':
+                    WorkflowEventBus.emit('high_memory', {
+                        'percent': alert.get('value'),
+                        'threshold': alert.get('threshold'),
+                        'severity': alert.get('severity')
+                    })
+        except Exception:
+            logger.exception("Error emitting workflow events for alerts")
 
     @classmethod
     def log_alert(cls, alerts: List[Dict]) -> None:

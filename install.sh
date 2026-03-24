@@ -28,6 +28,13 @@ VENV_DIR="$INSTALL_DIR/venv"
 LOG_DIR="/var/log/serverkit"
 DATA_DIR="/var/lib/serverkit"
 
+# Python constraints
+PYTHON_MIN="3.11"
+PYTHON_MAX="3.12"
+PYTHON_BIN=""
+
+SAFE_MODE=false
+
 print_header() {
     echo -e "${BLUE}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -41,6 +48,46 @@ print_error() { echo -e "${RED}✗ $1${NC}"; }
 print_warning() { echo -e "${YELLOW}! $1${NC}"; }
 print_info() { echo -e "${BLUE}→ $1${NC}"; }
 
+version_ge() { printf '%s\n%s' "$2" "$1" | sort -C -V; }
+version_le() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
+
+# Detect supported Python (3.11-3.12)
+detect_python() {
+    if command -v python3 &>/dev/null; then
+        PY_VER=$(python3 -c 'import sys;print(".".join(map(str,sys.version_info[:2])))')
+        if version_ge "$PY_VER" "$PYTHON_MIN" && version_le "$PY_VER" "$PYTHON_MAX"; then
+            PYTHON_BIN="python3"
+            print_success "Using system Python $PY_VER"
+            return
+        fi
+    fi
+    print_warning "System Python not in supported range ($PYTHON_MIN-$PYTHON_MAX)"
+}
+
+# Check RAM and enable safe mode for small VPS
+check_ram() {
+    RAM=$(free -m | awk '/Mem:/ {print $2}')
+    if [ "$RAM" -le 700 ]; then
+        SAFE_MODE=true
+        print_warning "Low RAM detected (${RAM}MB) → enabling VPS Safe Mode"
+    fi
+}
+
+# Create swap if system has very little
+setup_swap() {
+    SWAP_TOTAL=$(free -m | awk '/^Swap:/ {print $2}')
+    if [ "$SWAP_TOTAL" -lt 512 ]; then
+        print_info "Creating swap space (1GB)..."
+        if [ ! -f /swapfile ]; then
+            fallocate -l 1G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=1024 status=none
+            chmod 600 /swapfile
+            mkswap /swapfile >/dev/null
+        fi
+        swapon /swapfile 2>/dev/null || true
+        print_success "Swap enabled"
+    fi
+}
+
 print_header
 
 # Check if running as root
@@ -49,7 +96,11 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Check OS
+# Enable low-RAM protections early (needs root for swap)
+check_ram
+setup_swap
+
+# Detect OS family
 OS_FAMILY="unknown"
 if [ -f /etc/os-release ]; then
     . /etc/os-release
@@ -58,7 +109,7 @@ if [ -f /etc/os-release ]; then
     elif [ "$ID" = "fedora" ]; then
         OS_FAMILY="fedora"
     else
-        print_warning "This script is designed for Ubuntu/Debian/Fedora. Proceed with caution."
+        print_warning "Unsupported OS ($ID). This script is designed for Ubuntu/Debian/Fedora."
     fi
 else
     print_warning "Cannot detect OS. Proceeding with caution."
@@ -76,14 +127,12 @@ if [ "$OS_FAMILY" = "debian" ] || [ "$OS_FAMILY" = "unknown" ]; then
 
     # Also configure needrestart.conf if it exists for future apt operations
     if [ -f /etc/needrestart/needrestart.conf ]; then
-        # Set needrestart to auto-restart mode
         sed -i "s/#\$nrconf{restart} = 'i';/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf 2>/dev/null || true
     fi
 
-    # Update package list
     apt-get update
 
-    # Install Python and required packages
+
     apt-get install -y \
         python3 \
         python3-pip \
@@ -96,14 +145,26 @@ if [ "$OS_FAMILY" = "debian" ] || [ "$OS_FAMILY" = "unknown" ]; then
         libssl-dev \
         iproute2 \
         procps
+
+    detect_python
+
+    # If system Python is out of supported range, install 3.12
+    if [ -z "$PYTHON_BIN" ]; then
+        print_info "Installing Python 3.12..."
+        apt-get install -y \
+            python3.12 \
+            python3.12-venv \
+            python3.12-dev
+        PYTHON_BIN="python3.12"
+    fi
+
 elif [ "$OS_FAMILY" = "fedora" ]; then
-    # Update package list
     dnf update -y
-    
-    # Install Python and required packages
+
     dnf install -y \
         python3 \
         python3-pip \
+        python3-devel \
         git \
         curl \
         gcc \
@@ -114,6 +175,16 @@ elif [ "$OS_FAMILY" = "fedora" ]; then
         python3-devel \
         iproute \
         procps-ng
+
+    detect_python
+
+    if [ -z "$PYTHON_BIN" ]; then
+        print_info "Installing Python 3.12..."
+        dnf install -y \
+            python3.12 \
+            python3.12-devel
+        PYTHON_BIN="python3.12"
+    fi
 fi
 
 print_success "System dependencies installed"
@@ -191,13 +262,17 @@ fi
 
 # Set up Python virtual environment
 print_info "Setting up Python virtual environment..."
-python3 -m venv "$VENV_DIR"
+$PYTHON_BIN -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
 # Install Python dependencies
 print_info "Installing Python dependencies..."
 pip install --upgrade pip
-pip install -r "$INSTALL_DIR/backend/requirements.txt"
+if [ "$SAFE_MODE" = true ]; then
+    pip install --no-cache-dir -r "$INSTALL_DIR/backend/requirements.txt"
+else
+    pip install -r "$INSTALL_DIR/backend/requirements.txt"
+fi
 pip install gunicorn gevent gevent-websocket
 
 print_success "Python dependencies installed"
@@ -277,7 +352,7 @@ rm -f /etc/nginx/sites-enabled/default
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
 
-# Ensure nginx.conf includes sites-enabled
+# Ensure nginx.conf includes sites-enabled (Fedora uses conf.d by default)
 if ! grep -q "sites-enabled" /etc/nginx/nginx.conf; then
     sed -i '/http {/a \    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
 fi
@@ -289,7 +364,7 @@ ln -sf /etc/nginx/sites-available/serverkit.conf /etc/nginx/sites-enabled/
 # Copy site template
 cp "$INSTALL_DIR/nginx/sites-available/example.conf.template" /etc/nginx/sites-available/
 
-# Configure SELinux to allow nginx reverse proxying
+# Configure SELinux to allow nginx reverse proxying (Fedora)
 if [ "$OS_FAMILY" = "fedora" ] && command -v setsebool &> /dev/null; then
     setsebool -P httpd_can_network_connect 1 2>/dev/null || true
 fi
@@ -302,16 +377,7 @@ docker network prune -f 2>/dev/null || true
 docker container prune -f 2>/dev/null || true
 
 # Ensure swap exists for low-RAM VPS servers (Vite build needs ~512MB+)
-SWAP_TOTAL=$(free -m | awk '/^Swap:/ {print $2}')
-if [ "$SWAP_TOTAL" -lt 512 ]; then
-    print_info "Creating swap space for build..."
-    if [ ! -f /swapfile ]; then
-        fallocate -l 1G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=1024 status=none
-        chmod 600 /swapfile
-        mkswap /swapfile >/dev/null
-    fi
-    swapon /swapfile 2>/dev/null || true
-fi
+setup_swap
 
 # Build frontend on host (avoids Docker memory overhead on low-RAM VPS)
 print_info "Building frontend..."
@@ -379,7 +445,7 @@ if [ "$BACKEND_OK" = true ] && [ "$FRONTEND_OK" = true ]; then
     echo ""
     echo "Service Management:"
     echo "  Backend (systemd):     systemctl [start|stop|restart] serverkit"
-    echo "  Frontend (Docker):     docker compose -C $INSTALL_DIR [up|down]"
+    echo "  Frontend (Docker):     docker compose --project-directory $INSTALL_DIR [up|down]"
     echo ""
     echo "For all commands:        serverkit help"
     echo ""
@@ -390,6 +456,6 @@ else
     echo ""
     echo "Troubleshooting:"
     echo "  Backend logs:   journalctl -u serverkit -f"
-    echo "  Frontend logs:  docker compose -C $INSTALL_DIR logs -f"
+    echo "  Frontend logs:  docker compose --project-directory $INSTALL_DIR logs -f"
     echo ""
 fi

@@ -7,9 +7,12 @@ and handles agent lifecycle events.
 
 import hmac
 import hashlib
+import logging
 import secrets
 import time
 import threading
+
+logger = logging.getLogger(__name__)
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Callable, Any
 from dataclasses import dataclass, field
@@ -120,7 +123,7 @@ class AgentRegistry:
                     self._handle_agent_timeout(server_id)
 
             except Exception as e:
-                print(f"Error in heartbeat checker: {e}")
+                logger.error("Error in heartbeat checker: %s", e)
 
             self._stop_heartbeat.wait(30)  # Check every 30 seconds
 
@@ -152,7 +155,7 @@ class AgentRegistry:
                     session.disconnect_reason = 'heartbeat_timeout'
                     db.session.commit()
             except Exception as e:
-                print(f"Error updating server status: {e}")
+                logger.exception("Error updating server status")
 
     # ==================== Connection Management ====================
 
@@ -211,8 +214,16 @@ class AgentRegistry:
             )
             db.session.add(session)
             db.session.commit()
+
+            # Deliver any queued commands for this server
+            try:
+                from app.services.agent_fleet_service import fleet_service
+                fleet_service.deliver_queued_commands(server_id)
+            except Exception as e:
+                logger.error("Error delivering queued commands: %s", e)
+
         except Exception as e:
-            print(f"Error registering agent: {e}")
+            logger.exception("Error registering agent")
             db.session.rollback()
 
         return session_token
@@ -244,7 +255,7 @@ class AgentRegistry:
                     session.disconnect_reason = reason
                     db.session.commit()
             except Exception as e:
-                print(f"Error unregistering agent: {e}")
+                logger.exception("Error unregistering agent")
                 db.session.rollback()
 
     def get_agent(self, server_id: str) -> Optional[ConnectedAgent]:
@@ -272,27 +283,44 @@ class AgentRegistry:
 
     # ==================== Heartbeat ====================
 
-    def update_heartbeat(self, server_id: str, metrics: dict = None):
+    def update_heartbeat(self, server_id: str, metrics: dict = None, client_timestamp: int = None):
         """Update agent heartbeat and optionally store metrics"""
+        now = datetime.utcnow()
         with self._lock:
             agent = self._agents.get(server_id)
             if agent:
-                agent.last_heartbeat = datetime.utcnow()
+                agent.last_heartbeat = now
+
+        # Calculate heartbeat latency if client sent a timestamp
+        latency_ms = None
+        if client_timestamp:
+            now_ms = int(time.time() * 1000)
+            latency_ms = max(0, now_ms - client_timestamp)
 
         # Update server last_seen
         try:
             server = Server.query.get(server_id)
             if server:
-                server.last_seen = datetime.utcnow()
+                server.last_seen = now
                 if server.status != 'online':
                     server.status = 'online'
                 db.session.commit()
+
+            # Update session latency
+            if latency_ms is not None:
+                session = AgentSession.query.filter_by(
+                    server_id=server_id, is_active=True
+                ).first()
+                if session:
+                    session.last_heartbeat = now
+                    session.update_latency(latency_ms)
+                    db.session.commit()
 
             # Store metrics if provided
             if metrics:
                 self._store_metrics(server_id, metrics)
         except Exception as e:
-            print(f"Error updating heartbeat: {e}")
+            logger.exception("Error updating heartbeat")
             db.session.rollback()
 
     def _store_metrics(self, server_id: str, metrics: dict):
@@ -309,7 +337,7 @@ class AgentRegistry:
             db.session.add(metric)
             db.session.commit()
         except Exception as e:
-            print(f"Error storing metrics: {e}")
+            logger.exception("Error storing metrics")
             db.session.rollback()
 
     # ==================== Command Routing ====================
@@ -447,10 +475,17 @@ class AgentRegistry:
         """Handle command result from agent"""
         agent = self.get_agent_by_socket(socket_id)
         if not agent:
+            logger.warning(f"Command result from unknown socket: {socket_id}")
             return
 
         command_id = result.get('command_id')
         if not command_id:
+            logger.warning(f"Command result missing command_id from agent: {agent.server_id}")
+            return
+
+        # Validate command_id format to prevent injection
+        if not isinstance(command_id, str) or len(command_id) > 64:
+            logger.warning(f"Invalid command_id format from agent: {agent.server_id}")
             return
 
         with self._lock:
@@ -494,7 +529,7 @@ class AgentRegistry:
 
         # Check timestamp (allow 5 minute window)
         now = int(time.time() * 1000)
-        if abs(now - timestamp) > 300000:  # 5 minutes
+        if abs(now - timestamp) > 60000:  # 60 seconds
             if ip_address:
                 anomaly_detection_service.track_auth_attempt(None, False, ip_address)
             return None
@@ -550,6 +585,11 @@ class AgentRegistry:
         if ip_address:
             anomaly_detection_service.track_auth_attempt(server.id, True, ip_address)
 
+        # TODO: Implement per-message session token validation. Currently, the session
+        # token is issued at auth time but not verified on each subsequent message.
+        # Full session-per-message validation requires protocol changes on both the
+        # agent (Go) and backend sides.
+
         return server
 
     # ==================== System Info ====================
@@ -572,7 +612,7 @@ class AgentRegistry:
                 server.agent_version = info.get('agent_version', server.agent_version)
                 db.session.commit()
         except Exception as e:
-            print(f"Error updating system info: {e}")
+            logger.exception("Error updating system info")
             db.session.rollback()
 
 

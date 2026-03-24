@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import api from '../../services/api';
+import Modal from '../Modal';
 
 const WebhookSubscriptionModal = ({ subscription, onClose, onSubmit }) => {
     const [name, setName] = useState('');
@@ -70,12 +71,7 @@ const WebhookSubscriptionModal = ({ subscription, onClose, onSubmit }) => {
     }, {});
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal webhook-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h3>{subscription ? 'Edit Subscription' : 'Create Webhook Subscription'}</h3>
-                    <button className="modal-close" onClick={onClose}><X size={18} /></button>
-                </div>
+        <Modal open={true} onClose={onClose} title={subscription ? 'Edit Subscription' : 'Create Webhook Subscription'} className="webhook-modal">
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
                         <div className="form-group">
@@ -173,8 +169,7 @@ const WebhookSubscriptionModal = ({ subscription, onClose, onSubmit }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

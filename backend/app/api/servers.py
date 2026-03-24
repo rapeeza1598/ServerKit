@@ -11,10 +11,12 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, Response, current_app, redirect
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from app import db
+from app import db, limiter
 from app.models import User
-from app.models.server import Server, ServerGroup, ServerMetrics, ServerCommand, AgentSession
+from app.models.server import Server, ServerGroup, ServerMetrics, ServerCommand, AgentSession, AgentVersion, AgentRollout
 from app.services.agent_registry import agent_registry
+from app.services.agent_fleet_service import fleet_service
+from app.services.discovery_service import discovery_service
 from app.middleware.rbac import admin_required, developer_required
 
 servers_bp = Blueprint('servers', __name__)
@@ -318,6 +320,7 @@ def regenerate_token(server_id):
 
 
 @servers_bp.route('/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register_agent():
     """
     Agent registration endpoint.
@@ -386,6 +389,9 @@ def register_agent():
     ws_scheme = 'wss' if request.is_secure else 'ws'
     ws_url = f"{ws_scheme}://{request.host}/agent"
 
+    # Security note: api_secret is returned once during registration so the agent
+    # can store it. The server-side copy is stored encrypted. The registration token
+    # is already cleared above (single-use), preventing re-registration.
     return jsonify({
         'agent_id': server.agent_id,
         'name': server.name,
@@ -1848,3 +1854,203 @@ def trigger_agent_update(server_id):
     )
 
     return jsonify(result)
+
+
+# ==================== Agent Fleet Management ====================
+
+@servers_bp.route('/fleet/health', methods=['GET'])
+@jwt_required()
+@admin_required
+def get_fleet_health():
+    """Get aggregated health metrics for the agent fleet"""
+    return jsonify(fleet_service.get_fleet_health())
+
+
+@servers_bp.route('/fleet/versions', methods=['GET'])
+@jwt_required()
+@admin_required
+def list_agent_versions():
+    """List all available agent versions"""
+    versions = AgentVersion.query.order_by(AgentVersion.version.desc()).all()
+    return jsonify([v.to_dict() for v in versions])
+
+
+@servers_bp.route('/fleet/versions', methods=['POST'])
+@jwt_required()
+@admin_required
+def add_agent_version():
+    """Add a new available agent version"""
+    data = request.get_json()
+    
+    if not data.get('version'):
+        return jsonify({'error': 'Version is required'}), 400
+        
+    version = AgentVersion(
+        version=data['version'],
+        channel=data.get('channel', 'stable'),
+        min_panel_version=data.get('min_panel_version'),
+        max_panel_version=data.get('max_panel_version'),
+        release_notes=data.get('release_notes'),
+        assets=data.get('assets', {}),
+        published_at=datetime.fromisoformat(data['published_at']) if data.get('published_at') else datetime.utcnow()
+    )
+    
+    db.session.add(version)
+    db.session.commit()
+    
+    return jsonify(version.to_dict()), 201
+
+
+@servers_bp.route('/fleet/upgrade', methods=['POST'])
+@jwt_required()
+@admin_required
+def upgrade_fleet():
+    """Trigger upgrade for selected servers or entire fleet"""
+    data = request.get_json()
+    server_ids = data.get('server_ids', [])
+    version_id = data.get('version_id')
+    user_id = get_jwt_identity()
+    
+    if not server_ids:
+        # If no IDs provided, upgrade all online servers
+        servers = Server.query.filter_by(status='online').all()
+        server_ids = [s.id for s in servers]
+        
+    if not server_ids:
+        return jsonify({'success': True, 'message': 'No online servers to upgrade'})
+        
+    result = fleet_service.upgrade_servers(server_ids, version_id, user_id)
+    return jsonify(result)
+
+
+@servers_bp.route('/fleet/rollout', methods=['POST'])
+@jwt_required()
+@admin_required
+def start_staged_rollout():
+    """Start a staged rollout"""
+    data = request.get_json()
+    group_id = data.get('group_id')
+    version_id = data.get('version_id')
+    batch_size = data.get('batch_size', 5)
+    delay_minutes = data.get('delay_minutes', 10)
+    strategy = data.get('strategy', 'staged')
+    server_ids = data.get('server_ids')
+    user_id = get_jwt_identity()
+
+    if not version_id:
+        return jsonify({'error': 'version_id is required'}), 400
+
+    result = fleet_service.staged_rollout(
+        group_id, version_id, batch_size, delay_minutes,
+        strategy, user_id, server_ids
+    )
+    return jsonify(result)
+
+
+@servers_bp.route('/fleet/rollouts', methods=['GET'])
+@jwt_required()
+@admin_required
+def list_rollouts():
+    """List rollout history"""
+    status = request.args.get('status')
+    limit = request.args.get('limit', 20, type=int)
+    return jsonify(fleet_service.get_rollouts(status, limit))
+
+
+@servers_bp.route('/fleet/rollouts/<rollout_id>', methods=['GET'])
+@jwt_required()
+@admin_required
+def get_rollout(rollout_id):
+    """Get a specific rollout"""
+    rollout = fleet_service.get_rollout(rollout_id)
+    if not rollout:
+        return jsonify({'error': 'Rollout not found'}), 404
+    return jsonify(rollout)
+
+
+@servers_bp.route('/fleet/rollouts/<rollout_id>/cancel', methods=['POST'])
+@jwt_required()
+@admin_required
+def cancel_rollout(rollout_id):
+    """Cancel an active rollout"""
+    success = fleet_service.cancel_rollout(rollout_id)
+    if not success:
+        return jsonify({'error': 'Cannot cancel rollout (not running or not found)'}), 400
+    return jsonify({'success': True, 'message': 'Rollout cancelled'})
+
+
+@servers_bp.route('/fleet/discovery', methods=['POST'])
+@jwt_required()
+@admin_required
+def start_discovery_scan():
+    """Start a network scan for new agents"""
+    duration = request.args.get('duration', 10, type=int)
+    agents = discovery_service.start_scan(duration)
+    return jsonify(agents)
+
+
+@servers_bp.route('/fleet/discovery', methods=['GET'])
+@jwt_required()
+@admin_required
+def get_discovered_agents():
+    """Get results of last discovery scan"""
+    return jsonify(discovery_service.get_discovered_agents())
+
+
+@servers_bp.route('/fleet/approve/<server_id>', methods=['POST'])
+@jwt_required()
+@admin_required
+def approve_agent_registration(server_id):
+    """Approve a pending agent registration"""
+    user_id = get_jwt_identity()
+    success = fleet_service.approve_registration(server_id, user_id)
+
+    if not success:
+        return jsonify({'error': 'Failed to approve registration'}), 400
+
+    return jsonify({'success': True, 'message': 'Registration approved'})
+
+
+@servers_bp.route('/fleet/reject/<server_id>', methods=['POST'])
+@jwt_required()
+@admin_required
+def reject_agent_registration(server_id):
+    """Reject a pending agent registration"""
+    success = fleet_service.reject_registration(server_id)
+
+    if not success:
+        return jsonify({'error': 'Failed to reject registration'}), 400
+
+    return jsonify({'success': True, 'message': 'Registration rejected'})
+
+
+@servers_bp.route('/fleet/commands/queued', methods=['GET'])
+@jwt_required()
+@admin_required
+def get_queued_commands():
+    """Get all pending queued commands"""
+    server_id = request.args.get('server_id')
+    commands = fleet_service.get_queued_commands(server_id)
+    return jsonify(commands)
+
+
+@servers_bp.route('/fleet/commands/<command_id>/retry', methods=['POST'])
+@jwt_required()
+@admin_required
+def retry_command(command_id):
+    """Retry a failed command"""
+    result = fleet_service.retry_command(command_id)
+    if not result.get('success'):
+        return jsonify(result), 400
+    return jsonify(result)
+
+
+@servers_bp.route('/fleet/diagnostics/<server_id>', methods=['GET'])
+@jwt_required()
+@admin_required
+def get_server_diagnostics(server_id):
+    """Get detailed connection diagnostics for a server"""
+    diagnostics = fleet_service.get_server_diagnostics(server_id)
+    if 'error' in diagnostics:
+        return jsonify(diagnostics), 404
+    return jsonify(diagnostics)

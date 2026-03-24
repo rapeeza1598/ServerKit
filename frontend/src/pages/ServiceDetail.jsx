@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useService } from '../hooks/useService';
 import { getTabsForType } from '../utils/serviceTypes';
 import EnvironmentVariables from '../components/EnvironmentVariables';
@@ -30,6 +32,7 @@ const ServiceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const { service, deployConfig, loading, error, reload, performAction, deleteService } = useService(id);
     const [activeTab, setActiveTab] = useState('events');
     const [showDeployMenu, setShowDeployMenu] = useState(false);
@@ -75,8 +78,10 @@ const ServiceDetail = () => {
     }
 
     async function handleDelete() {
-        if (!confirm(`Delete ${service.name}? This action cannot be undone.`)) return;
-        if (!confirm('Are you sure? This will permanently remove the service and all its data.')) return;
+        const firstConfirm = await confirm({ title: 'Delete Service', message: `Delete ${service.name}? This action cannot be undone.` });
+        if (!firstConfirm) return;
+        const secondConfirm = await confirm({ title: 'Confirm Deletion', message: 'Are you sure? This will permanently remove the service and all its data.' });
+        if (!secondConfirm) return;
 
         setActionLoading('delete');
         try {
@@ -154,7 +159,7 @@ const ServiceDetail = () => {
                             onClick={() => setShowDeployMenu(!showDeployMenu)}
                         >
                             Deploy
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 4 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-1">
                                 <polyline points="6 9 12 15 18 9"/>
                             </svg>
                         </button>
@@ -334,6 +339,16 @@ const ServiceDetail = () => {
                     }}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
@@ -356,7 +371,7 @@ function ServiceIcon({ type }) {
                 </svg>
             );
         default:
-            return <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{type?.charAt(0).toUpperCase()}</span>;
+            return <span className="text-lg font-bold">{type?.charAt(0).toUpperCase()}</span>;
     }
 }
 

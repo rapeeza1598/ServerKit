@@ -10,6 +10,14 @@
  */
 
 // Connection rules matrix: [sourceType][sourceHandle] → [targetType][targetHandle]
+const automationTargets = {
+    dockerApp: ['input'],
+    service: ['input'],
+    script: ['input'],
+    notification: ['input'],
+    logic_if: ['input']
+};
+
 const connectionRules = {
     domain: {
         output: {
@@ -33,6 +41,19 @@ const connectionRules = {
             service: ['input']
         }
     },
+    trigger: {
+        output: automationTargets
+    },
+    script: {
+        output: automationTargets
+    },
+    notification: {
+        output: automationTargets
+    },
+    logic_if: {
+        true: automationTargets,
+        false: automationTargets
+    },
     database: {
         // Database has no source handles, cannot connect to anything
     }
@@ -46,7 +67,14 @@ export const connectionLabels = {
     'dockerApp-database': 'Uses DB',
     'service-dockerApp': 'Provides',
     'service-database': 'Uses',
-    'service-service': 'Connects to'
+    'service-service': 'Connects to',
+    'trigger-script': 'Triggers',
+    'trigger-notification': 'Triggers',
+    'trigger-dockerApp': 'Starts',
+    'script-script': 'Next',
+    'script-notification': 'Then notify',
+    'logic_if-script': 'If so',
+    'logic_if-notification': 'If so notify'
 };
 
 // Colors for connection types
@@ -178,7 +206,11 @@ const formatNodeType = (type) => {
         dockerApp: 'Docker App',
         database: 'Database',
         domain: 'Domain',
-        service: 'Service'
+        service: 'Service',
+        trigger: 'Trigger',
+        script: 'Script',
+        notification: 'Notification',
+        logic_if: 'Logic'
     };
     return labels[type] || type;
 };

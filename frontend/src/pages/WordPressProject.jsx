@@ -793,7 +793,7 @@ const CreatePipelineEnvModal = ({ onClose, onCreate, productionDomain, existingT
                     {formData.type === 'multidev' && (
                         <div className="form-group">
                             <label>
-                                <GitBranch size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
+                                <GitBranch size={14} className="mr-1" style={{ verticalAlign: -2 }} />
                                 Git Branch *
                             </label>
 
@@ -898,9 +898,8 @@ const CreatePipelineEnvModal = ({ onClose, onCreate, productionDomain, existingT
                                     {branches.length > 0 && (
                                         <button
                                             type="button"
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn btn-ghost btn-sm mt-1"
                                             onClick={() => { setUseCustomBranch(false); setFormData(prev => ({ ...prev, branch: '' })); }}
-                                            style={{ marginTop: 4 }}
                                         >
                                             Back to branch list
                                         </button>

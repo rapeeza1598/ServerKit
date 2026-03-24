@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GitCompare, Check, X, Minus, RefreshCw } from 'lucide-react';
 import wordpressApi from '../../services/wordpress';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const CompareView = ({ projectId, envA, envB, onClose }) => {
     const [comparison, setComparison] = useState(null);
@@ -31,16 +32,7 @@ const CompareView = ({ projectId, envA, envB, onClose }) => {
     const envBType = envB?.environment_type || 'development';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <GitCompare size={18} style={{ marginRight: 8, verticalAlign: -3 }} />
-                        Compare Environments
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Compare Environments" size="xl">
                 <div className="compare-header">
                     <div className={`compare-env-pill ${envAType}`}>
                         <span className="compare-env-type">{envAType}</span>
@@ -142,8 +134,7 @@ const CompareView = ({ projectId, envA, envB, onClose }) => {
                 <div className="modal-actions">
                     <button className="btn btn-secondary" onClick={onClose}>Close</button>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import PermissionEditor from './PermissionEditor';
+import Modal from '../Modal';
 
 const InviteModal = ({ onClose, onCreated }) => {
     const [email, setEmail] = useState('');
@@ -67,18 +68,7 @@ const InviteModal = ({ onClose, onCreated }) => {
     // Show result screen after creation
     if (result) {
         return (
-            <div className="modal-overlay">
-                <div className="modal modal-md">
-                    <div className="modal-header">
-                        <h3>Invitation Created</h3>
-                        <button className="modal-close" onClick={onClose}>
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div className="modal-body">
+            <Modal open={true} onClose={onClose} title="Invitation Created" size="md">
                         <p>Share this invitation link:</p>
                         <div className="invite-link-display">
                             <code>{result.invite_url}</code>
@@ -96,28 +86,15 @@ const InviteModal = ({ onClose, onCreated }) => {
                                 Email could not be sent: {result.email_error}
                             </p>
                         )}
-                    </div>
                     <div className="modal-footer">
                         <button className="btn btn-primary" onClick={onClose}>Done</button>
                     </div>
-                </div>
-            </div>
+            </Modal>
         );
     }
 
     return (
-        <div className="modal-overlay">
-            <div className="modal modal-md">
-                <div className="modal-header">
-                    <h3>Invite User</h3>
-                    <button className="modal-close" onClick={onClose}>
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Invite User" size="md">
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
                         {error && <div className="error-message">{error}</div>}
@@ -195,8 +172,7 @@ const InviteModal = ({ onClose, onCreated }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

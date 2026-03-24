@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Trash2, Star, Edit3, Save } from 'lucide-react';
 import wordpressApi from '../../services/wordpress';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const SanitizationProfileForm = ({ onClose, onProfilesChange }) => {
     const [profiles, setProfiles] = useState([]);
@@ -71,16 +72,7 @@ const SanitizationProfileForm = ({ onClose, onProfilesChange }) => {
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Shield size={18} style={{ marginRight: 8, verticalAlign: -3 }} />
-                        Sanitization Profiles
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Sanitization Profiles" size="lg">
                 <div className="sanitization-profiles-body">
                     {loading ? (
                         <div className="sanitization-loading">
@@ -124,8 +116,7 @@ const SanitizationProfileForm = ({ onClose, onProfilesChange }) => {
                 <div className="modal-actions">
                     <button className="btn btn-secondary" onClick={onClose}>Close</button>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -16,11 +16,16 @@ class ServerGroup(db.Model):
     icon = db.Column(db.String(50), default='server')  # Icon name
     parent_id = db.Column(db.String(36), db.ForeignKey('server_groups.id'), nullable=True)
 
+    # Fleet Management
+    auto_upgrade = db.Column(db.Boolean, default=False)
+    upgrade_channel = db.Column(db.String(20), default='stable')  # stable, beta
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    servers = db.relationship('Server', back_populates='group', lazy='dynamic')
+    # Use 'subquery' to eagerly load servers in a single query, avoiding N+1
+    servers = db.relationship('Server', back_populates='group', lazy='subquery')
     children = db.relationship('ServerGroup', backref=db.backref('parent', remote_side=[id]))
 
     def to_dict(self, include_servers=False):
@@ -31,7 +36,9 @@ class ServerGroup(db.Model):
             'color': self.color,
             'icon': self.icon,
             'parent_id': self.parent_id,
-            'server_count': self.servers.count(),
+            'auto_upgrade': self.auto_upgrade,
+            'upgrade_channel': self.upgrade_channel,
+            'server_count': len(self.servers),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -56,11 +63,11 @@ class Server(db.Model):
     ip_address = db.Column(db.String(45))  # IPv4 or IPv6
 
     # Organization
-    group_id = db.Column(db.String(36), db.ForeignKey('server_groups.id'), nullable=True)
+    group_id = db.Column(db.String(36), db.ForeignKey('server_groups.id'), nullable=True, index=True)
     tags = db.Column(db.JSON, default=list)  # ["production", "us-east", "docker"]
 
     # Status
-    status = db.Column(db.String(20), default='pending')
+    status = db.Column(db.String(20), default='pending', index=True)
     # pending, connecting, online, offline, error, maintenance
     last_seen = db.Column(db.DateTime)
     last_error = db.Column(db.Text)
@@ -68,6 +75,8 @@ class Server(db.Model):
     # Agent Info
     agent_version = db.Column(db.String(20))
     agent_id = db.Column(db.String(36), unique=True, index=True)  # Agent's UUID
+    auto_upgrade = db.Column(db.Boolean, default=False)
+    upgrade_channel = db.Column(db.String(20), default='stable')  # stable, beta
 
     # System Info (reported by agent)
     os_type = db.Column(db.String(20))  # linux, windows, darwin
@@ -378,6 +387,13 @@ class ServerCommand(db.Model):
     error = db.Column(db.Text)
     exit_code = db.Column(db.Integer)
 
+    # Retry / offline queue
+    retry_count = db.Column(db.Integer, default=0)
+    max_retries = db.Column(db.Integer, default=3)
+    next_retry_at = db.Column(db.DateTime)
+    backoff_seconds = db.Column(db.Integer, default=30)  # initial backoff, doubles each retry
+    queued = db.Column(db.Boolean, default=False)  # True when agent was offline at send time
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     server = db.relationship('Server', back_populates='commands')
@@ -395,6 +411,9 @@ class ServerCommand(db.Model):
             'result': self.result,
             'error': self.error,
             'exit_code': self.exit_code,
+            'retry_count': self.retry_count,
+            'max_retries': self.max_retries,
+            'queued': self.queued,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -414,11 +433,28 @@ class AgentSession(db.Model):
     ip_address = db.Column(db.String(45))
     user_agent = db.Column(db.String(255))  # Agent version info
 
+    # Latency tracking
+    heartbeat_latency_ms = db.Column(db.Float)  # Latest heartbeat round-trip latency
+    avg_latency_ms = db.Column(db.Float)  # Running average latency
+    latency_samples = db.Column(db.Integer, default=0)  # Number of samples in average
+
     is_active = db.Column(db.Boolean, default=True, index=True)
     disconnected_at = db.Column(db.DateTime)
     disconnect_reason = db.Column(db.String(100))
 
     server = db.relationship('Server', back_populates='sessions')
+
+    def update_latency(self, latency_ms):
+        """Update latency with exponential moving average"""
+        self.heartbeat_latency_ms = latency_ms
+        if self.avg_latency_ms is None or self.latency_samples == 0:
+            self.avg_latency_ms = latency_ms
+            self.latency_samples = 1
+        else:
+            # EMA with alpha = 0.2 for smoothing
+            alpha = 0.2
+            self.avg_latency_ms = alpha * latency_ms + (1 - alpha) * self.avg_latency_ms
+            self.latency_samples += 1
 
     def to_dict(self):
         return {
@@ -427,7 +463,107 @@ class AgentSession(db.Model):
             'connected_at': self.connected_at.isoformat() if self.connected_at else None,
             'last_heartbeat': self.last_heartbeat.isoformat() if self.last_heartbeat else None,
             'ip_address': self.ip_address,
+            'heartbeat_latency_ms': self.heartbeat_latency_ms,
+            'avg_latency_ms': self.avg_latency_ms,
             'is_active': self.is_active,
             'disconnected_at': self.disconnected_at.isoformat() if self.disconnected_at else None,
             'disconnect_reason': self.disconnect_reason,
         }
+
+
+class AgentRollout(db.Model):
+    """Tracks staged rollout progress"""
+    __tablename__ = 'agent_rollouts'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    version_id = db.Column(db.String(36), db.ForeignKey('agent_versions.id'), nullable=False)
+    group_id = db.Column(db.String(36), db.ForeignKey('server_groups.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    # Configuration
+    batch_size = db.Column(db.Integer, default=5)
+    delay_minutes = db.Column(db.Integer, default=10)
+    strategy = db.Column(db.String(20), default='staged')  # staged, all, canary
+
+    # Progress
+    status = db.Column(db.String(20), default='pending')  # pending, running, paused, completed, failed, cancelled
+    total_servers = db.Column(db.Integer, default=0)
+    processed_servers = db.Column(db.Integer, default=0)
+    failed_servers = db.Column(db.Integer, default=0)
+    current_wave = db.Column(db.Integer, default=0)
+
+    # Results per server
+    server_results = db.Column(db.JSON, default=list)  # [{server_id, status, error, wave}]
+
+    error = db.Column(db.Text)
+
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    version = db.relationship('AgentVersion')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'version_id': self.version_id,
+            'version': self.version.version if self.version else None,
+            'group_id': self.group_id,
+            'user_id': self.user_id,
+            'batch_size': self.batch_size,
+            'delay_minutes': self.delay_minutes,
+            'strategy': self.strategy,
+            'status': self.status,
+            'total_servers': self.total_servers,
+            'processed_servers': self.processed_servers,
+            'failed_servers': self.failed_servers,
+            'current_wave': self.current_wave,
+            'server_results': self.server_results or [],
+            'error': self.error,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class AgentVersion(db.Model):
+    """Available agent versions and compatibility matrix"""
+    __tablename__ = 'agent_versions'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    version = db.Column(db.String(20), nullable=False, unique=True)
+    channel = db.Column(db.String(20), default='stable')  # stable, beta
+    
+    # Compatibility
+    min_panel_version = db.Column(db.String(20))
+    max_panel_version = db.Column(db.String(20))
+    
+    # Metadata
+    release_notes = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    published_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Assets (mapped by platform: linux-amd64, windows-amd64, etc.)
+    assets = db.Column(db.JSON)  # {"linux-amd64": "url", "checksums": "url"}
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'version': self.version,
+            'channel': self.channel,
+            'min_panel_version': self.min_panel_version,
+            'max_panel_version': self.max_panel_version,
+            'release_notes': self.release_notes,
+            'is_active': self.is_active,
+            'published_at': self.published_at.isoformat() if self.published_at else None,
+            'assets': self.assets or {},
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+    def __repr__(self):
+        return f'<AgentVersion {self.version}>'

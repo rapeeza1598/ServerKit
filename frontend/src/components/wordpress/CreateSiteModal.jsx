@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import Modal from '../Modal';
 
 const CreateSiteModal = ({ onClose, onCreate }) => {
     const [formData, setFormData] = useState({
@@ -57,15 +58,7 @@ const CreateSiteModal = ({ onClose, onCreate }) => {
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Create WordPress Site</h2>
-                    <button className="modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Create WordPress Site">
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit}>
@@ -151,8 +144,7 @@ const CreateSiteModal = ({ onClose, onCreate }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

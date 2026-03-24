@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Terminal, Play, Clock, X } from 'lucide-react';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const QUICK_COMMANDS = [
     { label: 'Plugin List', command: 'wp plugin list --format=table' },
@@ -91,16 +92,7 @@ const WpCliTerminal = ({ environment, prodId, onClose, api }) => {
     const envName = environment?.name || 'Environment';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal wpcli-terminal-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Terminal size={18} />
-                        WP-CLI - {envName}
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title={`WP-CLI - ${envName}`} className="wpcli-terminal-modal">
                 <div className="wpcli-quick-actions">
                     {QUICK_COMMANDS.map(qc => (
                         <button
@@ -189,8 +181,7 @@ const WpCliTerminal = ({ environment, prodId, onClose, api }) => {
                         <Play size={12} />
                     </button>
                 </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

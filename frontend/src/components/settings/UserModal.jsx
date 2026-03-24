@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import PermissionEditor from './PermissionEditor';
+import Modal from '../Modal';
 
 const UserModal = ({ user, onSave, onClose }) => {
     const [formData, setFormData] = useState({
@@ -113,18 +114,7 @@ const UserModal = ({ user, onSave, onClose }) => {
     }
 
     return (
-        <div className="modal-overlay">
-            <div className="modal modal-md">
-                <div className="modal-header">
-                    <h3>{isEditing ? 'Edit User' : 'Add New User'}</h3>
-                    <button className="modal-close" onClick={onClose}>
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title={isEditing ? 'Edit User' : 'Add New User'} size="md">
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
                         {error && <div className="error-message">{error}</div>}
@@ -274,8 +264,7 @@ const UserModal = ({ user, onSave, onClose }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

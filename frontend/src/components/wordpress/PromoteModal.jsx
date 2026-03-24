@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Shield } from 'lucide-react';
 import wordpressApi from '../../services/wordpress';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const PromoteModal = ({ sourceEnv, targetEnv, onClose, onPromote }) => {
     const [promotionType, setPromotionType] = useState('code');
@@ -63,13 +64,7 @@ const PromoteModal = ({ sourceEnv, targetEnv, onClose, onPromote }) => {
     const targetType = targetEnv.environment_type || 'staging';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Promote Environment</h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Promote Environment" size="lg">
                 <form onSubmit={handleSubmit}>
                     <div className="promote-direction">
                         <div className={`promote-env-pill ${sourceType}`}>
@@ -240,8 +235,7 @@ const PromoteModal = ({ sourceEnv, targetEnv, onClose, onPromote }) => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

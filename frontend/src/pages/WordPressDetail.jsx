@@ -24,7 +24,7 @@ const DetailPageSkeleton = () => (
                 <div className="skeleton" style={{ width: 300, height: 16 }} />
             </div>
         </div>
-        <div className="app-detail-tabs" style={{ display: 'flex', gap: 8 }}>
+        <div className="app-detail-tabs flex gap-2">
             {[1, 2, 3, 4, 5, 6, 7].map(i => (
                 <div key={i} className="skeleton" style={{ width: 80, height: 32, borderRadius: 4 }} />
             ))}
@@ -894,7 +894,7 @@ const DatabaseTab = ({ siteId, site }) => {
             </div>
 
             {/* Snapshots */}
-            <div className="section-header" style={{ marginTop: 24 }}>
+            <div className="section-header mt-6">
                 <h3>Database Snapshots</h3>
                 <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
                     <Plus size={14} /> Create Snapshot

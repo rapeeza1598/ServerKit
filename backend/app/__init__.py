@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -12,6 +12,12 @@ from config import config
 db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
+
+# PyJWT 2.10+ enforces that 'sub' must be a string.
+# Stringify the identity so integer user IDs work transparently.
+@jwt.user_identity_loader
+def _user_identity(user_id):
+    return str(user_id)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100 per minute"])
 # Note: key_func is updated to get_rate_limit_key after app init
 socketio = None
@@ -222,6 +228,54 @@ def create_app(config_name=None):
     from app.api.servers import servers_bp
     app.register_blueprint(servers_bp, url_prefix='/api/v1/servers')
 
+    # Register blueprints - Fleet Monitor (Cross-server monitoring)
+    from app.api.fleet_monitor import fleet_monitor_bp
+    app.register_blueprint(fleet_monitor_bp, url_prefix='/api/v1/fleet-monitor')
+
+    # Register blueprints - Agent Plugins
+    from app.api.agent_plugins import agent_plugins_bp
+    app.register_blueprint(agent_plugins_bp, url_prefix='/api/v1/agent-plugins')
+
+    # Register blueprints - Server Templates
+    from app.api.server_templates import server_templates_bp
+    app.register_blueprint(server_templates_bp, url_prefix='/api/v1/server-templates')
+
+    # Register blueprints - Workspaces
+    from app.api.workspaces import workspaces_bp
+    app.register_blueprint(workspaces_bp, url_prefix='/api/v1/workspaces')
+
+    # Register blueprints - Advanced SSL
+    from app.api.advanced_ssl import advanced_ssl_bp
+    app.register_blueprint(advanced_ssl_bp, url_prefix='/api/v1/ssl/advanced')
+
+    # Register blueprints - DNS Zones
+    from app.api.dns_zones import dns_zones_bp
+    app.register_blueprint(dns_zones_bp, url_prefix='/api/v1/dns')
+
+    # Register blueprints - Nginx Advanced
+    from app.api.nginx_advanced import nginx_advanced_bp
+    app.register_blueprint(nginx_advanced_bp, url_prefix='/api/v1/nginx/advanced')
+
+    # Register blueprints - Status Pages
+    from app.api.status_pages import status_pages_bp
+    app.register_blueprint(status_pages_bp, url_prefix='/api/v1/status')
+
+    # Register blueprints - Cloud Provisioning
+    from app.api.cloud_provisioning import cloud_provisioning_bp
+    app.register_blueprint(cloud_provisioning_bp, url_prefix='/api/v1/cloud')
+
+    # Register blueprints - Performance
+    from app.api.performance import performance_bp
+    app.register_blueprint(performance_bp, url_prefix='/api/v1/performance')
+
+    # Register blueprints - Mobile
+    from app.api.mobile import mobile_bp
+    app.register_blueprint(mobile_bp, url_prefix='/api/v1/mobile')
+
+    # Register blueprints - Marketplace
+    from app.api.marketplace import marketplace_bp
+    app.register_blueprint(marketplace_bp, url_prefix='/api/v1/marketplace')
+
     # Handle database migrations (Alembic)
     with app.app_context():
         from app.services.migration_service import MigrationService
@@ -240,12 +294,38 @@ def create_app(config_name=None):
         # Start auto-sync scheduler for WordPress environments
         _start_auto_sync_scheduler(app)
 
+        # Start workflow scheduler
+        _start_workflow_scheduler(app)
+
         # Start API analytics flush thread
         from app.middleware.api_analytics import start_analytics_flush_thread
         start_analytics_flush_thread(app)
 
         # Start hourly analytics aggregation and event retry threads
         _start_api_background_threads(app)
+
+    # Request body size limit
+    app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB limit
+
+    # Reject 2FA pending tokens on non-2FA endpoints
+    @app.before_request
+    def check_2fa_pending():
+        """Reject 2FA pending tokens on non-2FA endpoints."""
+        from flask_jwt_extended import verify_jwt_in_request, get_jwt
+        if request.endpoint and request.path.startswith('/api/'):
+            # Allow 2FA verification endpoints
+            if '/two-factor/verify' in request.path or '/two-factor/verify-backup' in request.path:
+                return
+            # Allow auth endpoints (login, refresh)
+            if '/auth/login' in request.path or '/auth/refresh' in request.path:
+                return
+            try:
+                verify_jwt_in_request()
+                claims = get_jwt()
+                if claims.get('2fa_pending'):
+                    return jsonify({'error': '2FA verification required'}), 403
+            except Exception:
+                pass  # Let @jwt_required handle actual auth errors
 
     # Serve frontend for root path
     @app.route('/')
@@ -383,3 +463,87 @@ def _start_api_background_threads(app):
         name='api-background'
     )
     _api_bg_thread.start()
+
+
+_workflow_thread = None
+
+
+def _start_workflow_scheduler(app):
+    """Start a background thread that checks for scheduled workflows."""
+    global _workflow_thread
+    if _workflow_thread is not None:
+        return
+
+    import threading
+    import time
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    def workflow_loop():
+        while True:
+            try:
+                time.sleep(60)  # Check every 60 seconds
+                with app.app_context():
+                    _check_workflow_schedules(logger)
+            except Exception as e:
+                logger.error(f'Workflow scheduler error: {e}')
+
+    _workflow_thread = threading.Thread(
+        target=workflow_loop,
+        daemon=True,
+        name='workflow-scheduler'
+    )
+    _workflow_thread.start()
+
+
+def _check_workflow_schedules(logger):
+    """Check all active workflows with cron triggers and run those that are due."""
+    from app.models.workflow import Workflow
+    from app.services.workflow_engine import WorkflowEngine
+    from datetime import datetime
+    import json
+
+    try:
+        from croniter import croniter
+    except ImportError:
+        logger.debug('croniter not installed, skipping workflow schedule check')
+        return
+
+    # Find active workflows with cron triggers
+    workflows = Workflow.query.filter_by(is_active=True, trigger_type='cron').all()
+    if not workflows:
+        return
+
+    now = datetime.utcnow()
+
+    for workflow in workflows:
+        try:
+            config = json.loads(workflow.trigger_config) if workflow.trigger_config else {}
+            cron_expr = config.get('cron')
+            
+            if not cron_expr or not croniter.is_valid(cron_expr):
+                continue
+
+            cron = croniter(cron_expr, now)
+            prev_run = cron.get_prev(datetime)
+
+            # Check if a run was due in the last 90 seconds
+            seconds_since_due = (now - prev_run).total_seconds()
+            
+            # Also ensure we don't run it multiple times for the same slot
+            if 0 < seconds_since_due <= 90:
+                # Check if it already ran in the last 2 minutes
+                if workflow.last_run_at:
+                    seconds_since_last_run = (now - workflow.last_run_at).total_seconds()
+                    if seconds_since_last_run < 110:
+                        continue
+
+                logger.info(f'Scheduled workflow triggered: {workflow.name} (ID: {workflow.id})')
+                WorkflowEngine.execute_workflow(
+                    workflow_id=workflow.id,
+                    trigger_type='cron',
+                    context={'scheduled_at': prev_run.isoformat()}
+                )
+        except Exception as e:
+            logger.error(f'Workflow schedule check failed for workflow {workflow.id}: {e}')

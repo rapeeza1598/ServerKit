@@ -34,10 +34,14 @@ const Domains = () => {
     async function loadData() {
         try {
             setLoading(true);
+            const timeout = (promise, ms) => Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms))
+            ]);
             const [domainsData, appsData, sslData] = await Promise.all([
-                api.getDomains(),
-                api.getApps(),
-                api.getDomainsSslStatus().catch(() => null)
+                timeout(api.getDomains(), 10000).catch(() => ({ domains: [] })),
+                timeout(api.getApps(), 10000).catch(() => ({ apps: [] })),
+                timeout(api.getDomainsSslStatus(), 10000).catch(() => null)
             ]);
             setDomains(domainsData.domains || []);
             setApps(appsData.apps || []);
@@ -143,10 +147,6 @@ const Domains = () => {
         return app ? app.name : 'Unknown';
     }
 
-    if (loading) {
-        return <div className="loading">Loading domains...</div>;
-    }
-
     return (
         <div>
             <header className="top-bar">
@@ -200,7 +200,11 @@ const Domains = () => {
             {/* Domains List */}
             <h2 className="section-title">Domains</h2>
 
-            {domains.length === 0 ? (
+            {loading ? (
+                <div className="empty-state">
+                    <p>Loading domains...</p>
+                </div>
+            ) : domains.length === 0 ? (
                 <div className="empty-state">
                     <Globe size={48} />
                     <h3>No domains configured</h3>

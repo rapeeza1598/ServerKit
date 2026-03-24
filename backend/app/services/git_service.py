@@ -286,8 +286,7 @@ class GitService:
         """Run a deployment script."""
         try:
             result = subprocess.run(
-                script,
-                shell=True,
+                ['bash', '-c', script],
                 cwd=working_dir,
                 capture_output=True,
                 text=True,
@@ -433,6 +432,17 @@ class GitService:
                 'success': True,
                 'message': f'Ignoring push to {ref}, configured branch is {branch}'
             }
+
+        # Emit event for workflow triggers
+        try:
+            from app.services.workflow_engine import WorkflowEventBus
+            WorkflowEventBus.emit('git_push', {
+                'app_id': app_id,
+                'branch': branch,
+                'ref': ref
+            })
+        except Exception:
+            pass
 
         # Trigger deployment
         return cls.deploy(app_id)

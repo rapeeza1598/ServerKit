@@ -3,9 +3,13 @@ package agent
 import (
 	"bufio"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"sync"
 	"time"
@@ -17,6 +21,7 @@ import (
 	"github.com/serverkit/agent/internal/logger"
 	"github.com/serverkit/agent/internal/metrics"
 	"github.com/serverkit/agent/internal/terminal"
+	"github.com/serverkit/agent/internal/updater"
 	"github.com/serverkit/agent/internal/ws"
 	"github.com/serverkit/agent/pkg/protocol"
 )
@@ -151,6 +156,13 @@ func (a *Agent) registerHandlers() {
 		a.handlers[protocol.ActionSystemProcesses] = a.handleSystemProcesses
 	}
 
+	// File commands
+	if a.cfg.Features.Files {
+		a.handlers[protocol.ActionFileRead] = a.handleFileRead
+		a.handlers[protocol.ActionFileWrite] = a.handleFileWrite
+		a.handlers[protocol.ActionFileList] = a.handleFileList
+	}
+
 	// Terminal commands
 	if a.terminal != nil {
 		a.handlers[protocol.ActionTerminalCreate] = a.handleTerminalCreate
@@ -158,6 +170,9 @@ func (a *Agent) registerHandlers() {
 		a.handlers[protocol.ActionTerminalResize] = a.handleTerminalResize
 		a.handlers[protocol.ActionTerminalClose] = a.handleTerminalClose
 	}
+
+	// Agent commands
+	a.handlers[protocol.ActionAgentUpdate] = a.handleAgentUpdate
 }
 
 // Run starts the agent
@@ -195,6 +210,9 @@ func (a *Agent) Run(ctx context.Context) error {
 	// Start heartbeat loop
 	go a.heartbeatLoop(ctx)
 
+	// Start discovery responder
+	go a.discoveryLoop(ctx)
+
 	// Wait for context cancellation or restart request
 	select {
 	case <-ctx.Done():
@@ -206,6 +224,108 @@ func (a *Agent) Run(ctx context.Context) error {
 	a.cleanup()
 
 	return ctx.Err()
+}
+
+// discoveryLoop listens for UDP discovery requests and responds with agent info
+func (a *Agent) discoveryLoop(ctx context.Context) {
+	// Simple UDP broadcast listener
+	// Port 9000 matches DiscoveryService in backend
+	port := 9000
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		a.log.Error("Failed to resolve UDP address for discovery", "error", err)
+		return
+	}
+
+	conn, err := net.ListenUDP("udp", addr)
+	if err != nil {
+		a.log.Error("Failed to listen for discovery broadcasts", "error", err)
+		return
+	}
+	defer conn.Close()
+
+	a.log.Info("Agent discovery responder started", "port", port)
+
+	buf := make([]byte, 1024)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+			n, remoteAddr, err := conn.ReadFromUDP(buf)
+			if err != nil {
+				continue
+			}
+
+			var req struct {
+				Type      string `json:"type"`
+				Timestamp int64  `json:"timestamp"`
+				Signature string `json:"signature"`
+			}
+			if err := json.Unmarshal(buf[:n], &req); err != nil || (req.Type != "discovery_request" && req.Type != string(protocol.TypeDiscoveryRequest)) {
+				continue
+			}
+
+			// If agent has no credentials (not registered), don't respond to discovery
+			if a.cfg.Auth.APIKey == "" {
+				continue
+			}
+
+			// Validate timestamp is within 60 seconds
+			now := time.Now().UnixMilli()
+			if req.Timestamp <= 0 || abs(now-req.Timestamp) > 60000 {
+				a.log.Debug("Ignoring discovery request with stale timestamp")
+				continue
+			}
+
+			// Verify HMAC signature
+			if req.Signature == "" {
+				a.log.Debug("Ignoring discovery request without signature")
+				continue
+			}
+			expectedMessage := fmt.Sprintf("discovery:%d", req.Timestamp)
+			mac := hmac.New(sha256.New, []byte(a.cfg.Auth.APIKey))
+			mac.Write([]byte(expectedMessage))
+			expectedSignature := hex.EncodeToString(mac.Sum(nil))
+			if !hmac.Equal([]byte(req.Signature), []byte(expectedSignature)) {
+				a.log.Debug("Ignoring discovery request with invalid signature")
+				continue
+			}
+
+			// Respond with minimal agent info (no detailed hardware specs)
+			hostname, _ := os.Hostname()
+			resp := struct {
+				Type         string `json:"type"`
+				AgentID      string `json:"agent_id"`
+				Hostname     string `json:"hostname"`
+				Status       string `json:"status"`
+				AgentVersion string `json:"agent_version"`
+				Timestamp    int64  `json:"timestamp"`
+			}{
+				Type:         "discovery",
+				AgentID:      a.cfg.Agent.ID,
+				Hostname:     hostname,
+				Status:       "online",
+				AgentVersion: Version,
+				Timestamp:    time.Now().UnixMilli(),
+			}
+
+			data, _ := json.Marshal(resp)
+
+			// Send response to remoteAddr on port+1
+			respAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", remoteAddr.IP.String(), port+1))
+			conn.WriteToUDP(data, respAddr)
+		}
+	}
+}
+
+// abs returns the absolute value of an int64
+func abs(x int64) int64 {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 // heartbeatLoop sends periodic heartbeats
@@ -294,14 +414,17 @@ func (a *Agent) handleCommand(data []byte) {
 		return
 	}
 
-	// Execute command
+	// Execute command with enforced maximum timeout
 	start := time.Now()
-	ctx := context.Background()
-	if cmd.Timeout > 0 {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(cmd.Timeout)*time.Millisecond)
-		defer cancel()
+	maxTimeout := 5 * time.Minute
+	cmdTimeout := time.Duration(cmd.Timeout) * time.Millisecond
+
+	if cmdTimeout <= 0 || cmdTimeout > maxTimeout {
+		cmdTimeout = maxTimeout
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), cmdTimeout)
+	defer cancel()
 
 	result, err := handler(ctx, cmd.Params)
 	duration := time.Since(start)
@@ -1093,4 +1216,52 @@ func (a *Agent) Restart() error {
 	default:
 		return fmt.Errorf("restart already in progress")
 	}
+}
+
+// handleAgentUpdate handles agent upgrade commands
+func (a *Agent) handleAgentUpdate(ctx context.Context, params json.RawMessage) (interface{}, error) {
+	var p struct {
+		Version      string `json:"version"`
+		DownloadURL  string `json:"download_url"`
+		ChecksumsURL string `json:"checksums_url"`
+		Force        bool   `json:"force"`
+	}
+	if err := json.Unmarshal(params, &p); err != nil {
+		return nil, fmt.Errorf("invalid params: %w", err)
+	}
+
+	if p.Version == "" {
+		return nil, fmt.Errorf("version is required")
+	}
+
+	a.log.Info("Agent update triggered via panel", "version", p.Version)
+
+	// Create updater
+	u := updater.New(a.cfg, a.log, Version)
+
+	// Trigger update in background so we can respond to the command
+	go func() {
+		// Small delay to allow command result to be sent
+		time.Sleep(2 * time.Second)
+
+		// Download and install
+		// In a real implementation, we would use the provided URLs
+		// For now, we'll let the updater handle it using its default logic
+		// or extend it to use the provided URLs.
+		
+		err := u.UpdateTo(context.Background(), p.Version, p.DownloadURL, p.ChecksumsURL)
+		if err != nil {
+			a.log.Error("Update failed", "error", err)
+			return
+		}
+
+		a.log.Info("Update successful, restarting...")
+		a.Restart()
+	}()
+
+	return map[string]interface{}{
+		"success": true,
+		"message": "Update triggered",
+		"version": p.Version,
+	}, nil
 }

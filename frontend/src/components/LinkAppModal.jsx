@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Link2, GitBranch, AlertCircle, Check } from 'lucide-react';
 import api from '../services/api';
+import Modal from './Modal';
 
 const LinkAppModal = ({ app, onClose, onLinked }) => {
     const [apps, setApps] = useState([]);
@@ -68,18 +69,7 @@ const LinkAppModal = ({ app, onClose, onLinked }) => {
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal link-app-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Link2 size={20} />
-                        Link Application
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Link Application" className="link-app-modal">
                 {error && (
                     <div className="error-message">
                         <AlertCircle size={16} />
@@ -221,8 +211,7 @@ const LinkAppModal = ({ app, onClose, onLinked }) => {
                         </div>
                     </form>
                 )}
-            </div>
-        </div>
+        </Modal>
     );
 };
 

@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import useTabParam from '../hooks/useTabParam';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import QueryRunner from '../components/QueryRunner';
 
 const VALID_TABS = ['mysql', 'postgresql', 'docker', 'backups', 'sqlite'];
@@ -104,6 +106,7 @@ const Databases = () => {
 
 const MySQLTab = ({ status }) => {
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [databases, setDatabases] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -138,7 +141,8 @@ const MySQLTab = ({ status }) => {
     }
 
     async function handleDropDatabase(name) {
-        if (!confirm(`Drop database "${name}"? This cannot be undone!`)) return;
+        const confirmed = await confirm({ title: 'Drop Database', message: `Drop database "${name}"? This cannot be undone!` });
+        if (!confirmed) return;
 
         try {
             await api.dropMySQLDatabase(name);
@@ -163,7 +167,8 @@ const MySQLTab = ({ status }) => {
     }
 
     async function handleDropUser(username, host) {
-        if (!confirm(`Drop user "${username}"@"${host}"?`)) return;
+        const confirmed = await confirm({ title: 'Drop User', message: `Drop user "${username}"@"${host}"?` });
+        if (!confirmed) return;
 
         try {
             await api.dropMySQLUser(username, host);
@@ -349,12 +354,23 @@ const MySQLTab = ({ status }) => {
                     onClose={() => setQueryDb(null)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
 
 const PostgreSQLTab = ({ status }) => {
     const toast = useToast();
+    const { confirm: confirmPg, confirmState: confirmPgState, handleConfirm: handlePgConfirm, handleCancel: handlePgCancel } = useConfirm();
     const [databases, setDatabases] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -389,7 +405,8 @@ const PostgreSQLTab = ({ status }) => {
     }
 
     async function handleDropDatabase(name) {
-        if (!confirm(`Drop database "${name}"? This cannot be undone!`)) return;
+        const confirmed = await confirmPg({ title: 'Drop Database', message: `Drop database "${name}"? This cannot be undone!` });
+        if (!confirmed) return;
 
         try {
             await api.dropPostgreSQLDatabase(name);
@@ -414,7 +431,8 @@ const PostgreSQLTab = ({ status }) => {
     }
 
     async function handleDropUser(username) {
-        if (!confirm(`Drop user "${username}"?`)) return;
+        const confirmed = await confirmPg({ title: 'Drop User', message: `Drop user "${username}"?` });
+        if (!confirmed) return;
 
         try {
             await api.dropPostgreSQLUser(username);
@@ -600,11 +618,22 @@ const PostgreSQLTab = ({ status }) => {
                     onClose={() => setQueryDb(null)}
                 />
             )}
+            <ConfirmDialog
+                isOpen={confirmPgState.isOpen}
+                title={confirmPgState.title}
+                message={confirmPgState.message}
+                confirmText={confirmPgState.confirmText}
+                cancelText={confirmPgState.cancelText}
+                variant={confirmPgState.variant}
+                onConfirm={handlePgConfirm}
+                onCancel={handlePgCancel}
+            />
         </div>
     );
 };
 
 const BackupsTab = () => {
+    const { confirm: confirmBackup, confirmState: confirmBackupState, handleConfirm: handleBackupConfirm, handleCancel: handleBackupCancel } = useConfirm();
     const [backups, setBackups] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
@@ -627,7 +656,8 @@ const BackupsTab = () => {
     }
 
     async function handleDelete(filename) {
-        if (!confirm('Delete this backup?')) return;
+        const confirmed = await confirmBackup({ title: 'Delete Backup', message: 'Delete this backup?' });
+        if (!confirmed) return;
 
         try {
             await api.deleteDatabaseBackup(filename);
@@ -707,6 +737,16 @@ const BackupsTab = () => {
                     ))}
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmBackupState.isOpen}
+                title={confirmBackupState.title}
+                message={confirmBackupState.message}
+                confirmText={confirmBackupState.confirmText}
+                cancelText={confirmBackupState.cancelText}
+                variant={confirmBackupState.variant}
+                onConfirm={handleBackupConfirm}
+                onCancel={handleBackupCancel}
+            />
         </div>
     );
 };

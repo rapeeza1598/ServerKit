@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Cpu, HardDrive, AlertTriangle } from 'lucide-react';
 import Spinner from '../Spinner';
+import Modal from '../Modal';
 
 const PRESETS = {
     low: { memory: '256M', cpus: '0.25', db_memory: '256M', db_cpus: '0.25' },
@@ -41,16 +42,7 @@ const ResourceLimitsModal = ({ environment, currentLimits, onClose, onApply }) =
     const envName = environment?.name || 'Environment';
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal resource-limits-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>
-                        <Cpu size={18} />
-                        Resource Limits
-                    </h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
+        <Modal open={true} onClose={onClose} title="Resource Limits" className="resource-limits-modal">
                 <form onSubmit={handleSubmit}>
                     <div className="resource-limits-env-name">{envName}</div>
 
@@ -140,8 +132,7 @@ const ResourceLimitsModal = ({ environment, currentLimits, onClose, onApply }) =
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

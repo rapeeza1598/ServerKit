@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GitCommit, Rocket, Copy, CheckCircle } from 'lucide-react';
+import Modal from '../Modal';
 
 const CommitList = ({ commits, currentCommit, onDeploy, onCreateDev, loading = false }) => {
     const [actionLoading, setActionLoading] = useState({});
@@ -141,14 +142,7 @@ const CreateDevModal = ({ commit, onClose, onCreate, loading }) => {
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Create Dev Environment</h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
-                <div className="modal-body">
+        <Modal open={true} onClose={onClose} title="Create Dev Environment">
                     <p className="hint">
                         Create a development environment with code from commit{' '}
                         <code>{commit.sha.substring(0, 7)}</code>
@@ -188,9 +182,7 @@ const CreateDevModal = ({ commit, onClose, onCreate, loading }) => {
                             </button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
+        </Modal>
     );
 };
 

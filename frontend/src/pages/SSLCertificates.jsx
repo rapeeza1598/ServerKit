@@ -6,9 +6,12 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 const SSLCertificates = () => {
     const toast = useToast();
+    const { confirm, confirmState, handleConfirm, handleCancel } = useConfirm();
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -102,7 +105,8 @@ const SSLCertificates = () => {
     }
 
     async function handleRevokeCertificate(domain) {
-        if (!confirm(`Revoke and delete the certificate for ${domain}? This cannot be undone.`)) return;
+        const confirmed = await confirm({ title: 'Revoke Certificate', message: `Revoke and delete the certificate for ${domain}? This cannot be undone.` });
+        if (!confirmed) return;
 
         try {
             setActionLoading(true);
@@ -178,7 +182,7 @@ const SSLCertificates = () => {
                     {[1, 2].map(i => (
                         <div key={i} className="ssl-cert-item">
                             <div className="skeleton-box" style={{ width: 40, height: 40, borderRadius: 10 }} />
-                            <div style={{ flex: 1 }}>
+                            <div className="flex-1">
                                 <div className="skeleton-box" style={{ width: 200, height: 14, marginBottom: 8 }} />
                                 <div className="skeleton-box" style={{ width: 300, height: 12 }} />
                             </div>
@@ -247,10 +251,9 @@ const SSLCertificates = () => {
                     </div>
                     {!certbotInstalled && (
                         <button
-                            className="btn btn-primary btn-sm"
+                            className="btn btn-primary btn-sm ml-auto"
                             onClick={handleInstallCertbot}
                             disabled={actionLoading}
-                            style={{ marginLeft: 'auto' }}
                         >
                             <Download size={14} />
                             Install
@@ -460,6 +463,16 @@ const SSLCertificates = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                title={confirmState.title}
+                message={confirmState.message}
+                confirmText={confirmState.confirmText}
+                cancelText={confirmState.cancelText}
+                variant={confirmState.variant}
+                onConfirm={handleConfirm}
+                onCancel={handleCancel}
+            />
         </div>
     );
 };
