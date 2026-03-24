@@ -191,7 +191,7 @@ def prometheus_metrics():
     token = request.args.get('token') or request.headers.get('X-Prometheus-Token')
     expected = os.environ.get('PROMETHEUS_TOKEN')
 
-    if expected and token != expected:
+    if not expected or token != expected:
         return Response('Unauthorized', status=401)
 
     metrics = fleet_monitor_service.get_prometheus_metrics()

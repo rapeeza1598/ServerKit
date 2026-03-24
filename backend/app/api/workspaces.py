@@ -13,6 +13,16 @@ def get_current_user():
     return User.query.get(get_jwt_identity())
 
 
+def require_workspace_access(workspace_id, user):
+    """Return 403 response tuple if user is not a workspace member or admin, else None."""
+    if user.is_admin:
+        return None
+    role = WorkspaceService.get_user_role(workspace_id, user.id)
+    if role is None:
+        return jsonify({'error': 'Workspace access denied'}), 403
+    return None
+
+
 @workspaces_bp.route('/', methods=['GET'])
 @jwt_required()
 def list_workspaces():
@@ -29,6 +39,10 @@ def list_workspaces():
 @workspaces_bp.route('/<int:workspace_id>', methods=['GET'])
 @jwt_required()
 def get_workspace(workspace_id):
+    user = get_current_user()
+    denied = require_workspace_access(workspace_id, user)
+    if denied:
+        return denied
     ws = WorkspaceService.get_workspace(workspace_id)
     if not ws:
         return jsonify({'error': 'Workspace not found'}), 404
@@ -111,6 +125,10 @@ def delete_workspace(workspace_id):
 @workspaces_bp.route('/<int:workspace_id>/members', methods=['GET'])
 @jwt_required()
 def get_members(workspace_id):
+    user = get_current_user()
+    denied = require_workspace_access(workspace_id, user)
+    if denied:
+        return denied
     members = WorkspaceService.get_members(workspace_id)
     return jsonify({'members': [m.to_dict() for m in members]})
 
@@ -165,6 +183,10 @@ def remove_member(member_id):
 @workspaces_bp.route('/<int:workspace_id>/api-keys', methods=['GET'])
 @jwt_required()
 def list_api_keys(workspace_id):
+    user = get_current_user()
+    denied = require_workspace_access(workspace_id, user)
+    if denied:
+        return denied
     keys = WorkspaceService.list_api_keys(workspace_id)
     return jsonify({'api_keys': [k.to_dict() for k in keys]})
 
@@ -173,6 +195,9 @@ def list_api_keys(workspace_id):
 @jwt_required()
 def create_api_key(workspace_id):
     user = get_current_user()
+    denied = require_workspace_access(workspace_id, user)
+    if denied:
+        return denied
     data = request.get_json() or {}
     name = data.get('name')
     if not name:

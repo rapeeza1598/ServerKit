@@ -18,7 +18,7 @@ const DNSZones = () => {
     const [propagationResults, setPropagationResults] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-    const [zoneForm, setZoneForm] = useState({ domain: '', provider: 'manual' });
+    const [zoneForm, setZoneForm] = useState({ domain: '', provider: 'manual', provider_zone_id: '', api_token: '' });
     const [recordForm, setRecordForm] = useState({
         record_type: 'A', name: '@', content: '', ttl: 3600, priority: null
     });
@@ -50,10 +50,18 @@ const DNSZones = () => {
 
     const handleCreateZone = async () => {
         try {
-            await api.createDNSZone(zoneForm);
+            const payload = {
+                domain: zoneForm.domain,
+                provider: zoneForm.provider,
+            };
+            if (zoneForm.provider !== 'manual') {
+                payload.provider_zone_id = zoneForm.provider_zone_id;
+                payload.provider_config = { api_token: zoneForm.api_token };
+            }
+            await api.createDNSZone(payload);
             toast.success('Zone created');
             setShowCreateZone(false);
-            setZoneForm({ domain: '', provider: 'manual' });
+            setZoneForm({ domain: '', provider: 'manual', provider_zone_id: '', api_token: '' });
             loadZones();
         } catch (err) {
             toast.error(err.message);
@@ -227,6 +235,18 @@ const DNSZones = () => {
                                     <option value="digitalocean">DigitalOcean</option>
                                 </select>
                             </div>
+                            {zoneForm.provider !== 'manual' && (
+                                <>
+                                    <div className="form-group">
+                                        <label>Zone ID</label>
+                                        <input className="form-input" value={zoneForm.provider_zone_id} onChange={e => setZoneForm({...zoneForm, provider_zone_id: e.target.value})} placeholder={zoneForm.provider === 'cloudflare' ? 'Cloudflare Zone ID' : 'Provider Zone ID'} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>API Token</label>
+                                        <input className="form-input" type="password" value={zoneForm.api_token} onChange={e => setZoneForm({...zoneForm, api_token: e.target.value})} placeholder={`${zoneForm.provider.charAt(0).toUpperCase() + zoneForm.provider.slice(1)} API token`} />
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div className="modal__footer">
                             <button className="btn" onClick={() => setShowCreateZone(false)}>Cancel</button>

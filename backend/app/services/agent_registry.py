@@ -123,7 +123,7 @@ class AgentRegistry:
                     self._handle_agent_timeout(server_id)
 
             except Exception as e:
-                print(f"Error in heartbeat checker: {e}")
+                logger.error("Error in heartbeat checker: %s", e)
 
             self._stop_heartbeat.wait(30)  # Check every 30 seconds
 
@@ -155,7 +155,7 @@ class AgentRegistry:
                     session.disconnect_reason = 'heartbeat_timeout'
                     db.session.commit()
             except Exception as e:
-                print(f"Error updating server status: {e}")
+                logger.exception("Error updating server status")
 
     # ==================== Connection Management ====================
 
@@ -220,10 +220,10 @@ class AgentRegistry:
                 from app.services.agent_fleet_service import fleet_service
                 fleet_service.deliver_queued_commands(server_id)
             except Exception as e:
-                print(f"Error delivering queued commands: {e}")
+                logger.error("Error delivering queued commands: %s", e)
 
         except Exception as e:
-            print(f"Error registering agent: {e}")
+            logger.exception("Error registering agent")
             db.session.rollback()
 
         return session_token
@@ -255,7 +255,7 @@ class AgentRegistry:
                     session.disconnect_reason = reason
                     db.session.commit()
             except Exception as e:
-                print(f"Error unregistering agent: {e}")
+                logger.exception("Error unregistering agent")
                 db.session.rollback()
 
     def get_agent(self, server_id: str) -> Optional[ConnectedAgent]:
@@ -320,7 +320,7 @@ class AgentRegistry:
             if metrics:
                 self._store_metrics(server_id, metrics)
         except Exception as e:
-            print(f"Error updating heartbeat: {e}")
+            logger.exception("Error updating heartbeat")
             db.session.rollback()
 
     def _store_metrics(self, server_id: str, metrics: dict):
@@ -337,7 +337,7 @@ class AgentRegistry:
             db.session.add(metric)
             db.session.commit()
         except Exception as e:
-            print(f"Error storing metrics: {e}")
+            logger.exception("Error storing metrics")
             db.session.rollback()
 
     # ==================== Command Routing ====================
@@ -612,7 +612,7 @@ class AgentRegistry:
                 server.agent_version = info.get('agent_version', server.agent_version)
                 db.session.commit()
         except Exception as e:
-            print(f"Error updating system info: {e}")
+            logger.exception("Error updating system info")
             db.session.rollback()
 
 

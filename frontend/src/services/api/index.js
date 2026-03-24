@@ -8,6 +8,7 @@ import * as wordpressMethods from './wordpress.js';
 import * as systemMethods from './system.js';
 import * as securityMethods from './security.js';
 import * as fileMethods from './files.js';
+import * as dnsMethods from './dns.js';
 
 class ApiService extends ApiClient {
     constructor() {
@@ -23,6 +24,7 @@ class ApiService extends ApiClient {
             systemMethods,
             securityMethods,
             fileMethods,
+            dnsMethods,
         ];
         for (const mod of modules) {
             for (const [key, fn] of Object.entries(mod)) {

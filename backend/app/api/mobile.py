@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
+from app import db
 
 mobile_bp = Blueprint('mobile', __name__)
 
@@ -32,6 +33,9 @@ def register_push():
             'device_name': device_name,
             'registered_at': __import__('datetime').datetime.utcnow().isoformat(),
         })
+
+    user.push_subscriptions_json = json.dumps(push_subs)
+    db.session.commit()
 
     return jsonify({'message': 'Device registered', 'device_count': len(push_subs)})
 

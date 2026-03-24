@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function Modal({ open, onClose, title, children, className = '', size = '' }) {
+export default function Modal({ open, onClose, title, children, footer, className = '', size = '' }) {
     const modalRef = useRef(null);
 
     // Close on Escape key
@@ -40,6 +40,11 @@ export default function Modal({ open, onClose, title, children, className = '', 
                 <div className="modal-body">
                     {children}
                 </div>
+                {footer && (
+                    <div className="modal-footer">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>
     );

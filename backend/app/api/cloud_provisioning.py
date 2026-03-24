@@ -146,6 +146,9 @@ def create_snapshot(server_id):
 @cloud_provisioning_bp.route('/snapshots/<int:snapshot_id>', methods=['DELETE'])
 @jwt_required()
 def delete_snapshot(snapshot_id):
+    user = get_current_user()
+    if not user or not user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
     if not CloudProvisioningService.delete_snapshot(snapshot_id):
         return jsonify({'error': 'Not found'}), 404
     return jsonify({'message': 'Snapshot deleted'})

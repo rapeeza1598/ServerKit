@@ -52,6 +52,9 @@ def create_extension():
 @marketplace_bp.route('/<int:ext_id>', methods=['PUT'])
 @jwt_required()
 def update_extension(ext_id):
+    user = get_current_user()
+    if not user or not user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
     data = request.get_json()
     ext = MarketplaceService.update_extension(ext_id, data)
     if not ext:
@@ -99,6 +102,9 @@ def install_extension(ext_id):
 @marketplace_bp.route('/installs/<int:install_id>', methods=['DELETE'])
 @jwt_required()
 def uninstall_extension(install_id):
+    user = get_current_user()
+    if not user or not user.is_admin:
+        return jsonify({'error': 'Admin access required'}), 403
     if not MarketplaceService.uninstall_extension(install_id):
         return jsonify({'error': 'Not found'}), 404
     return jsonify({'message': 'Extension uninstalled'})
