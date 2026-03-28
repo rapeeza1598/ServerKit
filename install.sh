@@ -151,11 +151,36 @@ if [ "$OS_FAMILY" = "debian" ] || [ "$OS_FAMILY" = "unknown" ]; then
     # If system Python is out of supported range, install 3.12
     if [ -z "$PYTHON_BIN" ]; then
         print_info "Installing Python 3.12..."
-        apt-get install -y \
-            python3.12 \
-            python3.12-venv \
-            python3.12-dev
-        PYTHON_BIN="python3.12"
+
+        if [ "$ID" = "ubuntu" ]; then
+            # Ubuntu: use deadsnakes PPA
+            apt-get install -y software-properties-common
+            add-apt-repository -y ppa:deadsnakes/ppa
+            apt-get update
+            apt-get install -y python3.12 python3.12-venv python3.12-dev
+            PYTHON_BIN="python3.12"
+        else
+            # Debian / other apt-based: build from source
+            print_info "Building Python 3.12 from source (this may take a few minutes)..."
+            apt-get install -y wget zlib1g-dev libbz2-dev libreadline-dev \
+                libsqlite3-dev libncurses5-dev libncursesw5-dev \
+                xz-utils tk-dev liblzma-dev
+            cd /tmp
+            wget -q https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tgz
+            tar xzf Python-3.12.8.tgz
+            cd Python-3.12.8
+            ./configure --enable-optimizations --prefix=/usr/local 2>&1 | tail -1
+            make -j"$(nproc)" 2>&1 | tail -1
+            make altinstall 2>&1 | tail -1
+            cd /tmp && rm -rf Python-3.12.8 Python-3.12.8.tgz
+            PYTHON_BIN="python3.12"
+        fi
+
+        if ! command -v "$PYTHON_BIN" &>/dev/null; then
+            print_error "Failed to install Python 3.12. Please install Python 3.11 or 3.12 manually."
+            exit 1
+        fi
+        print_success "Python 3.12 installed"
     fi
 
 elif [ "$OS_FAMILY" = "fedora" ]; then
@@ -180,10 +205,29 @@ elif [ "$OS_FAMILY" = "fedora" ]; then
 
     if [ -z "$PYTHON_BIN" ]; then
         print_info "Installing Python 3.12..."
-        dnf install -y \
-            python3.12 \
-            python3.12-devel
-        PYTHON_BIN="python3.12"
+        if dnf install -y python3.12 python3.12-devel 2>/dev/null; then
+            PYTHON_BIN="python3.12"
+        else
+            # Fallback: build from source
+            print_info "Building Python 3.12 from source (this may take a few minutes)..."
+            dnf install -y wget zlib-devel bzip2-devel readline-devel \
+                sqlite-devel ncurses-devel xz-devel tk-devel libffi-devel
+            cd /tmp
+            wget -q https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tgz
+            tar xzf Python-3.12.8.tgz
+            cd Python-3.12.8
+            ./configure --enable-optimizations --prefix=/usr/local 2>&1 | tail -1
+            make -j"$(nproc)" 2>&1 | tail -1
+            make altinstall 2>&1 | tail -1
+            cd /tmp && rm -rf Python-3.12.8 Python-3.12.8.tgz
+            PYTHON_BIN="python3.12"
+        fi
+
+        if ! command -v "$PYTHON_BIN" &>/dev/null; then
+            print_error "Failed to install Python 3.12. Please install Python 3.11 or 3.12 manually."
+            exit 1
+        fi
+        print_success "Python 3.12 installed"
     fi
 fi
 
